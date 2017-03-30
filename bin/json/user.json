@@ -1,0 +1,33 @@
+{
+	"estatus": 1,
+	"pwd":"123456",	
+	"roles":[{"rol":"SuperAdmin"}],
+	"attributes": {
+		"name": "Esteban",
+		"firstName": "De Salgado",
+		"lastName": "Y Noria",
+		"gender": "M",
+		"age": 35,
+		"birthday": "29-04-1988",
+		"email": "thesuperjez@gmail.com"
+	},
+	"socialAccounts": [{
+		"type": "facebook",
+		"uid": "123456",
+		"token": "12345678910",
+		"email": "thesuperjez@gmail.com"
+	}, {
+		"type": "twitter",
+		"uid": "123456",
+		"token": "12345678910",
+		"username": "thesuperjez",
+		"email": "thesuperjez@gmail.com"
+	}, {
+		"type": "pinterest",
+		"uid": "123456",
+		"token": "12345678910",
+		"email": "thesuperjez@gmail.com"
+	}]
+	,"created":"currentDate"
+	,"user_created":"init"
+}

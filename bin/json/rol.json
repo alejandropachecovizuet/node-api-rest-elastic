@@ -1,0 +1,21 @@
+{"role": "SuperAdmin",
+ "restrictions":[{"restriction":"app.db.app_user.add"},
+                {"restriction":"app.db.app_user.delete"},
+                {"restriction":"app.db.app_user.update"},
+                {"restriction":"app.db.app_user.search"},
+				{"restriction":"app.db.app_rol.add"},
+                {"restriction":"app.db.app_rol.delete"},
+                {"restriction":"app.db.app_rol.update"},
+                {"restriction":"app.db.app_rol.search"},
+				{"restriction":"app.db.app_proveedor.add"},
+                {"restriction":"app.db.app_proveedor.delete"},
+                {"restriction":"app.db.app_proveedor.update"},
+                {"restriction":"app.db.app_proveedor.search"},
+				{"restriction":"app.db.app_city.add"},
+				{"restriction":"app.db.app_city.delete"},
+				{"restriction":"app.db.app_city.update"},
+				{"restriction":"app.db.app_city.search"}
+		       ]
+	,"created":"currentDate"
+	,"user_created":"init"
+}
