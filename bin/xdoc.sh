@@ -1,7 +1,8 @@
 FORMAT_DATE="date +%Y/%m/%d-%H:%M:%S"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT=$(basename $(dirname $DIR))
 FILES=$DIR/../restlets/*js
-HTML=$DIR/../xDoc/rest-api-mesa.html
+HTML=$DIR/../xDoc/$PROJECT.html
 AWK=$DIR/../xDoc/awk/xDoc.awk
 
 logger (){
@@ -21,7 +22,7 @@ discoveryServices (){
 }
 
 echo "" >$HTML;
-echo "<!DOCTYPE html><html><head><title>Rest Api - Mesa</title>">> $HTML;
+echo "<!DOCTYPE html><html><head><title>Rest Api - " $PROJECT "</title>">> $HTML;
 echo " <link rel=\"stylesheet\" href=\"css/bootstrap.min.css\">">> $HTML;
 echo " <link rel=\"stylesheet\" href=\"css/bootstrap-theme.min.css\">">> $HTML;
 echo " <script src=\"js/bootstrap.min.js\"></script>">> $HTML;
@@ -31,7 +32,7 @@ var footer= "</body></html>";
 echo 'HEADER:'$header
 
 
-echo "<h3 align=\"center\">"Api Rest - Mesa"</h3>" >> $HTML
+echo "<h3 align=\"center\">Api Rest - " $PROJECT "</h3>" >> $HTML
 for js in $(ls $FILES | sort)
 do
 name=`find xDocRestName: $js`

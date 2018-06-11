@@ -5,7 +5,7 @@ var jwtController={
          var message={_id:user._id,roles:user._source.roles};
          //R.logger.fatal(message);
          var token = R.jwt.sign(message,  R.properties.get('app.token.phrase'), {
-              expiresIn:  R.properties.get('app.token.expireine') // expires in 24 hours
+              expiresIn:  R.properties.get('app.token.expire') // expires in 24 hours
         });
         return {success: true, user:user, token: token};
     },

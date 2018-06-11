@@ -87,34 +87,34 @@ function findById(request, response){
 
 function add(request, response){
     var isvalidJson=true;
-    var index=request.params.index, type=request.params.type||request.params.index ,id=request.params.id;
-    var thisService='/'+index+'/'+type+'/'+id+'-PUT(add)';
+    var index=request.params.index, id=request.params.id;
+    var thisService='/'+index+'/'+id+'-PUT(add)';
     
-    if(index.indexOf("app_") >-1 && (type.indexOf("_") ==-1 || type.indexOf("_") ==3)  ){
+    if(index.indexOf("app_") >-1){
         var addCallback =function(){
 
             jsonvalidator.validateVsSchema(index,request.body,function(error){
-                R.logger.error('No paso la validación de esquema:'+error);
+                R.logger.error('No paso la validación de esquema:'+'['+index+']'+error);
                 isvalidJson=false;
                 restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,error);     
             });
 
             if(isvalidJson){
-                elasticController.findById(index,id).then(
+                elasticController.findById(index ,id).then(
                         function(result){
                             if(result.responses[0].hits==undefined || result.responses[0].hits.total==0){
                             request.body.created=appUtil.getCurrentDateForElastic();
                             request.body.user_created=request.headers.ux;
-                            elasticController.add(index,type,id,request.body).then(function (result) { 
+                            elasticController.add(index,index,id,request.body).then(function (result) { 
                                                 updateChangesControl(index);
                                                 restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
                                           }); 
                             }else{
-                            R.logger.error('Duplicated key:['+index+']['+type+']['+id+']');
+                            R.logger.error('Duplicated key:['+index+']['+id+']');
                                 restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_DUPLICATED,'{"error":"'+ R.constants.ERROR_DUPLICATED_KEY+'"}');
                             }
                     }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda['+index+']['+type+']['+id+']:' +JSON.stringify(error));
+                            R.logger.fatal('No es posible realizar la búsqueda['+index+']['+id+']:' +JSON.stringify(error));
                             restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
                     });
    
@@ -138,33 +138,43 @@ function add(request, response){
 
 function update(request, response){
     var isvalidJson=true;
-    var index=request.params.index, type=request.params.type ,id=request.params.id;
+    var index=request.params.index ,id=request.params.id;
     
-    var thisService='/'+index+'/'+type+'/'+id+'-UPDATE';
-    if(request.body!='undefined' && JSON.stringify(request.body)!='{}' && index.indexOf("app_") >-1 && (type.indexOf("_") ==-1 || type.indexOf("_") ==3)  ){
+    var thisService='/'+index+'/'+id+'-UPDATE';
+    console.log("Service--->" + thisService);
+    if(request.body!='undefined' && JSON.stringify(request.body)!='{}' && index.indexOf("app_") >-1){
+        console.log("1");
+        var addCallback1 =function(){
+            console.log('successs!!!!!');
+        }
         var addCallback =function(){
+                console.log("2");
             jsonvalidator.validateVsSchemaForUpdate(index,request.body,function(error){
+                console.log("3");
                 R.logger.error('No paso la validación de esquema:'+error);
                 isvalidJson=false;
                 restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,error);     
             });
+            console.log("4");
 
             if(isvalidJson){
+                console.log("Find record ...");
                 elasticController.findById(index,id).then(
                         function(result){
                             if(result.responses[0].hits.total==1){
                             request.body.updated=appUtil.getCurrentDateForElastic();
                             request.body.user_updated=request.headers.ux;
-                            elasticController.add(index,type,id,request.body).then(function (result) { 
+                            console.log("updating in elasticsearch ...");
+                            elasticController.add(index,index,id,request.body).then(function (result) { 
                                             updateChangesControl(index);
                                             restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
                                           }); 
                             }else{
-                                R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+type+']['+id+']');
+                                R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
                                 restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_NOT_FOUND,R.constants.ERROR_NOT_FOUND);
                             }
                     }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda del registro a actualizar['+index+']['+type+']['+id+']:' +JSON.stringify(error));
+                            R.logger.fatal('No es posible realizar la búsqueda del registro a actualizar['+index+']['+id+']:' +JSON.stringify(error));
                             restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
                     });
             }
@@ -180,6 +190,7 @@ function update(request, response){
             ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.update'}
             };
         R.logger.trace(thisService+'->'+JSON.stringify(params));
+        console.log('excecuting ....')
         restApiUtil.execute(params);    
     }else{
          restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS);
@@ -188,25 +199,25 @@ function update(request, response){
 
 
 function deleteById(request, response){
-    var index=request.params.index, type=request.params.type, id=request.params.id;
-    var thisService='/'+index+'/'+type+'/'+id+'-DELETE';
+    var index=request.params.index, id=request.params.id;
+    var thisService='/'+index+'/'+id+'-DELETE';
     
     var deleteFunct =function(){
                 elasticController.findById(index,id).then(
                         function(result){
                             if(result.responses[0].hits.total==1){
-                               elasticController.deleteById(index,type,id).then(function(result){
+                               elasticController.deleteById(index,index,id).then(function(result){
                                      restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
                                                        }).fail(function(errordelete){
-                                                         R.logger.error('No fue posible eliminar el objeto['+index+']['+type+']['+id+']:' + errordelete);
+                                                         R.logger.error('No fue posible eliminar el objeto['+index+']['+id+']:' + errordelete);
                                                          restApiUtil.sendResponse(request.body,response,thisService,errordelete.status,errordelete);
                                                        });
                             }else{
-                            R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+type+']['+id+']');
+                            R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
                             restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_NOT_FOUND,R.constants.ERROR_NOT_FOUND);
                             }
                     }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda del registro a borrar['+index+']['+type+']['+id+']:' +JSON.stringify(error));
+                            R.logger.fatal('No es posible realizar la búsqueda del registro a borrar['+index+']['+id+']:' +JSON.stringify(error));
                             restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
                     });
     }
@@ -224,16 +235,7 @@ function deleteById(request, response){
     restApiUtil.execute(params);    
 }
 
-/*
-router.route('/:index').put(function(request, response) { //xDoc-NoDoc xDoc-Desc:Agrega un registro en el indice <b>:index</b> y tipo  <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example: {"cve": "1","description":"Activo"}
-    add(request,response);
-});
-
-router.route('/:index/:type').put(function(request, response) { //xDoc-NoDoc xDoc-Desc:Agrega un registro en el indice <b>:index</b> y tipo  <b>:type</b>  xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example: {"cve": "1","description":"Activo"}
-    add(request,response);
-});
-*/
-router.route('/:index/:type/:id').put(function(request, response) { //xDoc-Desc:Agrega un registro en el indice <b>:index</b>, el tipo  <b>:type</b> y el id <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example: {"cve": "1","description":"Activo"}
+router.route('/:index/:id').put(function(request, response) { //xDoc-Desc:Agrega un registro en el indice <b>:index</b>  y el id <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example: {"cve": "1","description":"Activo"}
     add(request,response);
 });
 
@@ -241,19 +243,16 @@ router.route('/:index/_search').post(function(request, response) { //xDoc-Desc:B
     find(request,response);
 });
 
-router.route('/:index/:type/_search').post(function(request, response) { //xDoc-Desc:Busca todos los registros en el indice <b>:index</b> y tipo <b>:type</b> que cumplan con el query xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:{"query": {"match_all": {}}}
-    find(request,response);
-});
-
 router.route('/:index/_searchById/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> en el indice <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
     findById(request,response);
 });
 
-router.route('/:index/:type/:id/_update').put(function(request, response) { //xDoc-Desc:Actualiza el registro indicado en <b>:id(_id de elasticsearch)</b> del catalogo <b>:index</b> y tipo <b>:type</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:<b>NO_BODY</b> 
+router.route('/:index/:id/_update').put(function(request, response) { //xDoc-Desc:Actualiza el registro indicado en <b>:id(_id de elasticsearch)</b> del catalogo <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:<b>NO_BODY</b> 
+    console.log("updating ..................");
     update(request,response);
 });
 
-router.route('/:index/:type/:id').delete(function(request, response) { //xDoc-Desc:Borra el registro indicado en <b>:id(_id de elasticsearch)</b> del catalogo <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:<b>NO_BODY</b> 
+router.route('/:index/:id').delete(function(request, response) { //xDoc-Desc:Borra el registro indicado en <b>:id(_id de elasticsearch)</b> del catalogo <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:<b>NO_BODY</b> 
     deleteById(request,response);
 });
 

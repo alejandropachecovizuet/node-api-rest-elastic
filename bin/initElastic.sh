@@ -1,17 +1,20 @@
 curl 'localhost:9200/_cat/indices?v'
 echo "borrando indices ....";
-curl -XDELETE 'http://localhost:9200/app_user'
+#curl -XDELETE 'http://localhost:9200/app_catalog'
+#curl -XDELETE 'http://localhost:9200/app-test'
+#curl -XDELETE 'http://localhost:9200/app_user'
 curl -XDELETE 'http://localhost:9200/app_rol'
 
 currentDate=`date +%Y%m%dT%H%M00Z`
 
 echo "Insertando roles....";
 sed s/"currentDate"/$currentDate/g json/rol.json > json/rol.json.tmp
-curl -X POST http://localhost:9200/app_rol/rol/SuperAdmin --data-binary "@json/rol.json.tmp"
+curl -X PUT http://localhost:9200/app_rol/rol/SuperAdmin -H 'Content-Type: application/json' --data-binary "@json/rol.json.tmp"
+
 rm json/rol.json.tmp
 
 echo "creando mappings....";
-curl -X POST 'http://localhost:9200/app_user' -d \
+curl -X PUT 'http://localhost:9200/app_user' -H 'Content-Type: application/json' -d \
 '{
   "mappings": {
     "user": {
@@ -57,7 +60,15 @@ curl -XGET 'http://localhost:9200/app_user/_mapping'
 
 echo "Insertando usuario chingon!!!!!";
 sed s/"currentDate"/$currentDate/g json/user.json > json/user.json.tmp
-curl -X POST http://localhost:9200/app_user/init/chingon --data-binary "@json/user.json.tmp"
+curl -X PUT http://localhost:9200/app_user/init/chingon -H 'Content-Type: application/json' --data-binary "@json/user.json.tmp"
+curl -X PUT http://localhost:9200/app_user/init/test -H 'Content-Type: application/json' -d \
+'{
+	"estatus": 1,
+	"pwd":"123456",	
+	"roles":[{"rol":"test"}],
+	"attributes": {		}
+}'
+
 rm json/user.json.tmp
 echo "Nuevos indices ....";
 curl 'localhost:9200/_cat/indices?v'

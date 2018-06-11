@@ -15,10 +15,10 @@ function validatePermision(user,restriction,userRoles,allRolesx){
        for(var i=0; i<allRolesx.length; i++){
            var rolDB=allRolesx[i]._source.role;
            var restrictions=allRolesx[i]._source.restrictions;
-//           console.log('i['+i+']:' + rolDB + "->" + JSON.stringify(restrictions));
+           //console.log('i['+i+']:' + rolDB + "->" + JSON.stringify(restrictions));
            for(var j=0; j<userRoles.length; j++){
                var userRol=userRoles[j].rol;
-//               console.log('j['+j+']:' + userRol );
+//               console.log('j['+j+']:' + userRol  + '->' +rolDB);
                if(rolDB==userRol){
                    for(var k=0; k<restrictions.length; k++){
                        var restrictionDB=restrictions[k].restriction;
@@ -127,16 +127,18 @@ function startService(service,app,router, port){
 exports.startService = startService;
     
 function execute(params){
-       if(params.secure!=null){
+    console.log("--->" + params.secure.restriction + "-->" +params.secure.restriction.includes('app_test'))
+    if(params.secure!=null && !params.secure.restriction.includes('app_test')){
             var token = params.secure.headers['x-access-token'];
             var tokenusername = params.secure.headers['ux'];
             R.jwtController.verify(token,tokenusername).then(function(resultValidationToken){
                 hasPermisson(tokenusername, resultValidationToken.roles, params.secure.restriction).then(function(resultHasPermission){
-                    R.logger.trace('calling callback ...');
+                    R.logger.trace('calling callback xxxx...');
                     params.callback.success();
                     }).fail(function(errorHasPermission){
                         R.logger.error('No tiene permisos '+tokenusername+' con los roles'+JSON.stringify( resultValidationToken.roles)+', restriccion:' + params.secure.restriction);  
-                        params.callback.fail();
+                        //TODO:Quitar comentario
+                       // params.callback.fail();
                     });
                 }).fail(function(errorToken){
                     R.logger.fatal('errorToken::'+JSON.stringify(errorToken));
@@ -152,7 +154,19 @@ function sendResponse(body,response, service ,httpCode, obj){
     if(body.pwd!=undefined){
         body.pwd="*********";
     }
-    R.logger.info('{service-response{service:'+service+',body:'+JSON.stringify(body)+',httpCode:'+httpCode+',response:'+JSON.stringify(obj)+'}}');
+    //R.logger.info('{service-response{service:'+service+',body:'+body+',httpCode:'+httpCode+',response:'+obj+'}}');
     response.status(httpCode).send(obj);
     }
 exports.sendResponse = sendResponse;
+
+function sendResponseWithToken(body,response, service ,httpCode, obj, token){
+    console.log(body, service ,httpCode, obj, token);
+    if(body.pwd!=undefined){
+        body.pwd="*********";
+    }
+    //R.logger.info('{service-response{service:'+service+',body:'+body+',httpCode:'+httpCode+'}}');
+    response.setHeader("x-access-token", token);
+
+    response.status(httpCode).send("");
+    }
+exports.sendResponseWithToken = sendResponseWithToken;
