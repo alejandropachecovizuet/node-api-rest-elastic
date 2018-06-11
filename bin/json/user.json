@@ -14,18 +14,15 @@
 	"socialAccounts": [{
 		"type": "facebook",
 		"uid": "123456",
-		"token": "12345678910",
 		"email": "thesuperjez@gmail.com"
 	}, {
 		"type": "twitter",
 		"uid": "123456",
-		"token": "12345678910",
 		"username": "thesuperjez",
 		"email": "thesuperjez@gmail.com"
 	}, {
 		"type": "pinterest",
 		"uid": "123456",
-		"token": "12345678910",
 		"email": "thesuperjez@gmail.com"
 	}]
 	,"created":"currentDate"

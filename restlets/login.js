@@ -31,7 +31,7 @@ router.route('/authenticate').post(function(request, response) { //xDoc-Desc:Aut
                            R.logger.debug("Se autentico el usuario " + request.body.username + " correctamente!!!");
                            var resx=result.responses[0].hits.hits[0];
                             resx.token=R.jwtController.sign(resx).token;
-                           restApiUtil.sendResponse(request.body,response,servicex,R.constants.HTTP_OK,"["+JSON.stringify(resx)+"]");
+                           restApiUtil.sendResponseWithToken(request.body,response,servicex,R.constants.HTTP_OK,"["+JSON.stringify(resx)+"]",resx.token);
                         }else{
                            request.body.pwd='************';
                            R.logger.error('No existe el usuario/password indicado:' +JSON.stringify(request.body));

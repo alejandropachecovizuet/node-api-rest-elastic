@@ -6,8 +6,9 @@ var R = require("../util/rest-api-requires");
 /*http://jsonschema.net/#/ - ayuda a generar los esquemas*/
 
 var schemasEquivalent={
-    "app_city":"app_catalog"
-    ,"app_estate":"app_catalog"
+    "app_test":"app_catalog",
+    "app_city":"app_catalog",
+    "app_estate":"app_catalog"
 }
 var schemas={
     "authenticate_schema":{

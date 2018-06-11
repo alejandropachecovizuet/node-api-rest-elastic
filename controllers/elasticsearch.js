@@ -81,13 +81,7 @@ exports.find = find;
 
 function findById(indexName,id) {
     var queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
-return R.elasticClient.msearch({
-    index: indexName,
-  body: [
-    // match all query, on all indices and types
-    {},queryObj
-  ]
-});
+return find(indexName,indexName,queryObj)
 }
 
 exports.findById = findById;
