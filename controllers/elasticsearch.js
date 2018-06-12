@@ -1,113 +1,63 @@
 'use strict';
-var R = require("../util/rest-api-requires");
+let R = require("../util/rest-api-requires");
 
 /**
 * Delete an existing index
 */
-function deleteIndex(indexName) {  
-    return R.elasticClient.indices.delete({
-        index: indexName
-    });
-}
-exports.deleteIndex = deleteIndex;
+exports.deleteIndex= index => R.elasticClient.indices.delete({index: index});
 
 /**
 * create the index
 */
-function initIndex(indexName) {  
-    return R.elasticClient.indices.create({
-        index: indexName
-    });
-}
-exports.initIndex = initIndex;
+exports.initIndex = index =>R.elasticClient.indices.create({index});
 
 /**
 * check if the index exists
 */
-function indexExists(indexName) {  
-    return R.elasticClient.indices.exists({
-        index: indexName
-    });
-}
-exports.indexExists = indexExists;  
+exports.indexExists = index => R.elasticClient.indices.exists({index});
 
-function initMapping(indexName, typeName, mapping) {  
-    return R.elasticClient.indices.putMapping({
-        index: indexName,
-        type: typeName,
-/*        body: {
-            properties: {
-                id: { type: "string" },
-                nombre: { type: "string" },
-                apellidop: { type: "string" },
-                apellidom: { type: "string" },
-                frase: { type: "string" },
-                suggest: {
-                    type: "completion",
-                    analyzer: "simple",
-                    search_analyzer: "simple",
-                    payloads: true
-                }
-            }
-        }*/
-        body: mapping
-    });
-}
-exports.initMapping = initMapping;
+exports.initMapping = (index, type, mapping) => R.elasticClient.indices.putMapping({
+        index,
+        type,
+        body: mapping});
 
-
-function add(indexName, typeName,uuid,obj) {  
-    //R.logger.debug('add->' + indexName + "-->" + typeName + '-->' + obj);
-    return R.elasticClient.index({
-        index: indexName,
-        type: typeName,
+exports.add = (index, uuid,body) => R.elasticClient.index({
+        index,
+        type:index,
         id:uuid,
-        body:obj
+        body
     });
-}
-exports.add = add;
 
-function find(indexName, typeName,queryObj) {  
-return R.elasticClient.msearch({
-    index: indexName,
-    type: typeName,
-  body: [
+let find = (index, queryObj,type) => R.elasticClient.msearch({
+    index,
+    type,
+    body: [
     // match all query, on all indices and types
     {},queryObj
-  ]
-});
-}
-exports.find = find;
+    ]
+   });
+exports.find=find;
 
-function findById(indexName,id) {
-    var queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
-return find(indexName,indexName,queryObj)
-}
+exports.findById = (index,id) => {
+    let queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
+    return find(index,queryObj,index);
+};
 
-exports.findById = findById;
-
-function deleteById(indexName, typeName, id) {
-    var deferred = R.q.defer();
-    R.elasticClient.delete({
-        index: indexName,
-        type: typeName,
-        id:id
-    }, function (error, resp) {
-        if (error) {
-            console.error('DeleteObject error - elastic:' + error);
-            deferred.reject(error);
-        }else{
-        deferred.resolve({success:true, _id:id});
-        }
+exports.deleteById = (index, type, id) => {
+    let promise = new Promise((resolve, reject)=> {
+        R.elasticClient.delete({index,type,id})
+        .then(response=> {
+           resolve();
+        },error =>{
+            reject(error);
+        })
     });
-        return deferred.promise;
-}
+    return promise;
+};
 
-exports.deleteById = deleteById;
 
-function getSuggestions(input) {  
-    return R.elasticClient.suggest({
-        index: indexName,
+exports.getSuggestions = (index,input) => R.elasticClient.suggest({
+        index: index,
         type: "document",
         body: {
             docsuggest: {
@@ -118,6 +68,4 @@ function getSuggestions(input) {
                 }
             }
         }
-    })
-}
-exports.getSuggestions = getSuggestions;
+    });

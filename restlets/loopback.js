@@ -2,23 +2,23 @@
 /*
  xDocRestName:Loopback
  * */
-var R = require("../util/rest-api-requires");
-var restApiUtil = require("../util/restApiUtil");
-var app = R.express();
+let R = require("../util/rest-api-requires");
+let restApiUtil = require("../util/restApiUtil");
+let app = R.express();
 
-var router=restApiUtil.init(app);
+let router=restApiUtil.init(app);
 
-router.route('/loopback').post(function(req, res) { //xDoc-Desc:Servicio loopback de usuario xDoc-Esteban:prueba xDoc-JSON-Example:{"username":"luisXV", "nombre":"Luis", "apellidop":"Zamora", "apellidom":"Salgado", "frase":"123456", "loopback":{"http":{"code":"404","response":{"Err":"ok","x":"y"}} } } 
-       var servicex='/loopback[POST]';  
-       if(req.body.loopback==='test'){
-                restApiUtil.sendResponse(req,res,servicex,R.constants.HTTP_BAD_REQUEST,R.constants.HTTP_OK);
-       }else if(req.body.loopback==undefined){
-                restApiUtil.sendResponse(req,res,servicex,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS);
+router.route('/loopback').post(function(request, response) { //xDoc-Desc:Servicio loopback de usuario xDoc-Esteban:prueba xDoc-JSON-Example:{"username":"luisXV", "nombre":"Luis", "apellidop":"Zamora", "apellidom":"Salgado", "frase":"123456", "loopback":{"http":{"code":"404","response":{"Err":"ok","x":"y"}} } } 
+        const {method, url, body}=request;
+        const thisService=`[${method}]${url}`;
+       if(body.loopback==='test'){
+                restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService);
+        }else if(body.loopback==undefined){
+                restApiUtil.sendResponse(response,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS,body,thisService);
        }else{
-                restApiUtil.sendResponse(req,res,servicex,req.body.loopback.http.code,req.body.loopback.http.response);
+                restApiUtil.sendResponse(response,body.loopback.http.code,body.loopback.http.response,body,thisService);
         }
-                
 });
 
-var _PORT_=R.properties.get('loopback.PORT');
+let _PORT_=R.properties.get('loopback.PORT');
 restApiUtil.startService('Loopback',app, router ,_PORT_);

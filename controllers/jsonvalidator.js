@@ -1,16 +1,16 @@
 'use strict';
-var Ajv = require('ajv');
-var R = require("../util/rest-api-requires");
+let Ajv = require('ajv');
+let R = require("../util/rest-api-requires");
 
 /*Schema definitions*/
 /*http://jsonschema.net/#/ - ayuda a generar los esquemas*/
 
-var schemasEquivalent={
+const schemasEquivalent={
     "app_test":"app_catalog",
     "app_city":"app_catalog",
     "app_estate":"app_catalog"
 }
-var schemas={
+const schemas={
     "authenticate_schema":{
       "description": "Schema for login authentication",
       "properties": {
@@ -115,60 +115,53 @@ var schemas={
     }
 };
 
+exports.validateVsSchema = (schemaName, data) =>{
+    let promesa= new Promise((resolve, reject) => {
+        const schemaEquivalent = schemasEquivalent[schemaName];
+        const schema = schemaEquivalent?schemas[schemaEquivalent]:schemas[schemaName];
+        if(!schema){
+            reject();
+        }
+        let ajv = new Ajv({allErrors: true});
+        let validate = ajv.compile(schema);
+        let valid = validate(data);
+        if (valid){
+            R.logger.debug('El json es valido!!');
+            resolve(data);
+        } else{
+            R.logger.error('El JSON NO es valido:',validate.errors);
+            reject(validate.errors);
+        }
+    });
 
-function validateVsSchema(schemaName, data,callbackError){
-    var schemaEquivalent = schemasEquivalent[schemaName];
-    var env=R.properties.get('app.environtment');
-    var schema;
-    if(schemaEquivalent!=undefined){
-        schema = schemas[schemaEquivalent];
-    }else{
-        schema = schemas[schemaName];
-    }
-    if(schema==undefined){
-    R.logger.fatal('>>>>>>>>>>>>>>>>>>>'+schema);
-        if(env==null || env==R.constants.ENVIRONTMENT_PROD){
-    R.logger.fatal('1');
-            callbackError('');
-        }else{
-    R.logger.fatal('2');
-            callbackError('{"error":"No se ha definido el squema para:' + schemaName+'"}');
-        }
-    }
-    var ajv = new Ajv({allErrors: true});
-    var validate = ajv.compile(schema);
-    var valid = validate(data);
-    if (valid){
-        R.logger.trace('El json es valido !!!!->'+JSON.stringify(data));
-    } else{
-        R.logger.error('El JSON no es valido:' + JSON.stringify(validate.errors));
-        if(env==null || env==R.constants.ENVIRONTMENT_PROD){
-            callbackError('');
-        }else{
-            callbackError(validate.errors);
-        }
-    }
-}
-exports.validateVsSchema=validateVsSchema;
+    return promesa;
+    
+};
 
-function validateVsSchemaForUpdate(schemaName, data,callbackError){
-    var schema_tmp = schemas[schemaName];
-    var schema = JSON.parse(JSON.stringify(schema_tmp))
-    schema.required.push('created');
-    schema.required.push('user_created');
-    var ajv = new Ajv({allErrors: true});
-    var validate = ajv.compile(schema);
-    var valid = validate(data);
-    if (valid){
-        R.logger.trace('El json es valido!!->'+JSON.stringify(data));
-    } else{
-        R.logger.error('El JSON no es valido:' + JSON.stringify(validate.errors));
-        var env=R.properties.get('app.environtment');
-        if(env==null || env==R.constants.ENVIRONTMENT_PROD){
-            callbackError('');
-        }else{
-            callbackError(validate.errors);
+exports.validateVsSchemaForUpdate = (schemaName, data) =>{
+    let promesa= new Promise((resolve, reject) => {
+        const schemaEquivalent = schemasEquivalent[schemaName];
+        const schema = schemaEquivalent?schemas[schemaEquivalent]:schemas[schemaName];
+        if(!schema){
+            reject();
         }
-    }
-}
-exports.validateVsSchemaForUpdate=validateVsSchemaForUpdate;
+        schema.required.push('time_created');
+        schema.required.push('user_created');
+        let ajv = new Ajv({allErrors: true});
+        let validate = ajv.compile(schema);
+        let valid = validate(data);
+        if (valid){
+            R.logger.debug('El json es valido!!');
+            resolve(data);
+        } else{
+            R.logger.error('El JSON NO es valido:',validate.errors);
+            reject(validate.errors);
+        }
+    
+    });
+
+    return promesa;
+    
+};
+
+
