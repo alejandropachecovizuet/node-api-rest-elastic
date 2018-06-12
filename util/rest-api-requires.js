@@ -6,25 +6,23 @@ function define(name, value) {
 }
 
   
-var PropertiesReader = require('properties-reader');
-var properties = PropertiesReader('./app.properties')
+let PropertiesReader = require('properties-reader');
+let properties = PropertiesReader('./app.properties')
 define("properties", properties);
 exports.properties=properties;
 
 define("logger", require('./logger'));
 define("jwtController", require('../controllers/jwt'));
-define("q", require('q'));
 define("constants", require('../util/constants'));
 define("jwt", require('jsonwebtoken'));
 define("express", require('express'));
 define("bodyParser", require('body-parser'));
 define("methodOverride", require('method-override'));
-var session = require('express-session');
+let session = require('express-session');
 define("session", require('express-session'));
 
-var elasticsearch= require("elasticsearch");
-//var deleteByQuery = require("elasticsearch-deletebyquery");
-var elasticClient = new elasticsearch.Client({  
+let elasticsearch= require("elasticsearch");
+let elasticClient = new elasticsearch.Client({  
     host: properties.get('app.elasticsearch.host'),
     log: properties.get('app.elasticsearch.log')
 //    plugins:[deleteByQuery]

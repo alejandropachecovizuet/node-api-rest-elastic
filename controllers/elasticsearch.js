@@ -1,5 +1,5 @@
 'use strict';
-var R = require("../util/rest-api-requires");
+let R = require("../util/rest-api-requires");
 
 /**
 * Delete an existing index
@@ -39,7 +39,7 @@ let find = (index, queryObj,type) => R.elasticClient.msearch({
 exports.find=find;
 
 exports.findById = (index,id) => {
-    var queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
+    let queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
     return find(index,queryObj,index);
 };
 

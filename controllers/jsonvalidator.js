@@ -132,7 +132,6 @@ exports.validateVsSchema = (schemaName, data) =>{
             R.logger.error('El JSON NO es valido:',validate.errors);
             reject(validate.errors);
         }
-    
     });
 
     return promesa;

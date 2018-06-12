@@ -6,24 +6,23 @@ let jsonvalidator= require('../controllers/jsonvalidator');
 let timeout = require('connect-timeout');
 let allRoles;
 
-//var restApiUtil={
 function validatePermision(user,restrictionUser,userRoles,allRolesx){
     let found=false;
     R.logger.debug(`validatePermision...${restrictionUser}`,userRoles);
 
     let promise = new Promise((resolve, reject)=>{
         if(allRolesx!=null){
-            for(var i=0; i<allRolesx.length; i++){
-                var rolDB=allRolesx[i]._source.role;
-                var restrictions=allRolesx[i]._source.restrictions;
-                //console.log('i['+i+']:', rolDB  ,restrictions);
-                for(var j=0; j<userRoles.length; j++){
-                    var userRol=userRoles[j].rol;
-                    //console.log('j['+j+']:',userRol,rolDB);
+            for(let i=0; i<allRolesx.length; i++){
+                let rolDB=allRolesx[i]._source.role;
+                let restrictions=allRolesx[i]._source.restrictions;
+                //R.logger.debug('i['+i+']:', rolDB  ,restrictions);
+                for(let j=0; j<userRoles.length; j++){
+                    let userRol=userRoles[j].rol;
+                    //R.logger.debug('j['+j+']:',userRol,rolDB);
                     if(rolDB==userRol){
-                        console.debug(`Rol encontrado: ${userRol}`)
-                        for(var k=0; k<restrictions.length; k++){
-                            var restrictionDB=restrictions[k].restriction;
+                        R.logger.debug(`Rol encontrado: ${userRol}`)
+                        for(let k=0; k<restrictions.length; k++){
+                            let restrictionDB=restrictions[k].restriction;
                            if(restrictionDB===restrictionUser){
                               R.logger.debug(`restriccion[${restrictionUser}] encontrada en rol[${userRol}]`);
                              found=true;
@@ -109,24 +108,23 @@ function startService(service,app,router, port){
 
 
     if(R.properties.get('app.protocol')=='https'){
-        var https = require('https');
-        var privateKey  = fs.readFileSync('certs/key.pem', 'utf8');
-        var certificate = fs.readFileSync('certs/cert.pem', 'utf8');
-        var credentials = {key: privateKey, cert: certificate};
+        let https = require('https');
+        let privateKey  = fs.readFileSync('.certs/key.pem', 'utf8');
+        let certificate = fs.readFileSync('.certs/cert.pem', 'utf8');
+        let credentials = {key: privateKey, cert: certificate};
 
-        var httpsServer = https.createServer(credentials, app);
+        let httpsServer = https.createServer(credentials, app);
         httpsServer.listen(port, function() {  
         R.logger.info('['+service+'](HTTPS)Node server running on ' + port + ', proceso: ' + process.pid );
-//        console.log(process);
-        console.log(process.getuid());
-        console.log(process.getgid());
-        console.log(process.id);
+        R.logger.info(process.getuid());
+        R.logger.info(process.getgid());
+        R.logger.info(process.id);
             
             
         });
     }else{
-        var http = require('http');
-        var httpServer = http.createServer(app);
+        let http = require('http');
+        let httpServer = http.createServer(app);
         httpServer.listen(port, function() {  
         R.logger.info(`[${service}](HTTP)Node server running on : ${port} , proceso: ${process.pid}`);
         });

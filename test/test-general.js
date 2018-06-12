@@ -6,12 +6,13 @@ let tokenExpired='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ0ZXN0Iiwicm9sZ
 let user='test';
 let randomId= Math.random()+'';
 process.env.NODE_ENV = 'test';
+protocol='http';
 
 describe('Unit test api-rest - general service', function() {
 
 step('add', function(done) {
     //console.log(`Add registry: ${randomId}`);
-    let urlStr=`http://localhost:20000/app_test/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_test/${randomId}`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': token,
         'ux':user} } , function(error, response, body) {        
@@ -23,7 +24,7 @@ step('add', function(done) {
 });
 
 step('add-duplicated', function(done) {
-    let urlStr=`http://localhost:20000/app_test/1`
+    let urlStr=`${protocol}://localhost:20000/app_test/1`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': token,
         'ux':user} } , function(error, response, body) {        
@@ -35,7 +36,7 @@ step('add-duplicated', function(done) {
 });
 
 step('add-token-whith-user-incorrect', function(done) {
-    let urlStr=`http://localhost:20000/app_test/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_test/${randomId}`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': token,
         'ux':`${user}xx`} } , function(error, response, body) {
@@ -46,7 +47,7 @@ step('add-token-whith-user-incorrect', function(done) {
 });
 
 step('add-token-incorrect', function(done) {
-    let urlStr=`http://localhost:20000/app_test/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_test/${randomId}`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': `${token}x`,
         'ux':user} } , function(error, response, body) {
@@ -56,7 +57,7 @@ step('add-token-incorrect', function(done) {
     });
 });
 step('add-token-expired', function(done) {
-    let urlStr=`http://localhost:20000/app_test/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_test/${randomId}`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': tokenExpired,
         'ux':user} } , function(error, response, body) {
@@ -67,7 +68,7 @@ step('add-token-expired', function(done) {
 });
 
 step('add-collection-not-authorized', function(done) {
-    let urlStr=`http://localhost:20000/app_testx/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_testx/${randomId}`
     request.put({url:urlStr,  form: {"description":"Test"},headers: {
         'x-access-token': token,
         'ux':user} } , function(error, response, body) {
@@ -79,7 +80,7 @@ step('add-collection-not-authorized', function(done) {
 
 
 step('search-by-id-ok', function(done) {
-    let urlStr='http://localhost:20000/app_test/_searchById/1';
+    let urlStr=`${protocol}://localhost:20000/app_test/_searchById/1`;
     //console.log('Buscando ...', randomId);
     request({url:urlStr,headers: {
         'x-access-token': token,
@@ -91,7 +92,7 @@ step('search-by-id-ok', function(done) {
 });
 
 step('search-by-id-not-found', function(done) {
-    let urlStr='http://localhost:20000/app_test/_searchById/10000000';
+    let urlStr=`${protocol}://localhost:20000/app_test/_searchById/10000000`;
     //console.log('Buscando ...', randomId);
     request({url:urlStr,headers: {
         'x-access-token': token,
@@ -102,7 +103,7 @@ step('search-by-id-not-found', function(done) {
     });
 });
 step('search-by-id-not-found-index', function(done) {
-    let urlStr='http://localhost:20000/app_testx/_searchById/10000000';
+    let urlStr=`${protocol}://localhost:20000/app_testx/_searchById/10000000`;
     //console.log('Buscando ...', randomId);
     request({url:urlStr,headers: {
         'x-access-token': token,
@@ -115,7 +116,7 @@ step('search-by-id-not-found-index', function(done) {
 
 
 step('search-ok', function(done) {
-    let urlStr='http://localhost:20000/app_test/_search';
+    let urlStr=`${protocol}://localhost:20000/app_test/_search`;
     //console.log('Buscando ...', randomId);
     request.post({url:urlStr,headers: {
         'x-access-token': token,
@@ -127,7 +128,7 @@ step('search-ok', function(done) {
 });
 
 step('search-not-found-index', function(done) {
-    let urlStr='http://localhost:20000/app_testx/_search';
+    let urlStr=`${protocol}://localhost:20000/app_testx/_search`;
     //console.log('Buscando ...', randomId);
     request.post({url:urlStr,headers: {
         'x-access-token': token,
@@ -141,7 +142,7 @@ step('search-not-found-index', function(done) {
 
 step('delete', function(done) {
     //console.log(`Del registry: ${randomId}`);
-    let urlStr=`http://localhost:20000/app_test/${randomId}`
+    let urlStr=`${protocol}://localhost:20000/app_test/${randomId}`
     setTimeout(function() {
         request.del({url:urlStr,headers: {
             'x-access-token': token,
@@ -155,7 +156,7 @@ step('delete', function(done) {
 
   step('delete-not-exits', function(done) {
     //console.log(`Del registry: ${randomId}`);
-    let urlStr='http://localhost:20000/app_test/33333'
+    let urlStr=`${protocol}://localhost:20000/app_test/33333`
     request.del({url:urlStr,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
@@ -166,7 +167,7 @@ step('delete', function(done) {
   });
 
 step('changes', function(done) {
-    request({url:'http://localhost:20000/changes',headers: {
+    request({url:`${protocol}://localhost:20000/changes`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
@@ -176,7 +177,7 @@ step('changes', function(done) {
   });
 
   step('ping-ok', function(done) {
-    request({url:'http://localhost:20000/ping',headers: {
+    request({url:`${protocol}://localhost:20000/ping`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
@@ -186,7 +187,7 @@ step('changes', function(done) {
   });
 
   step('fail', function(done) {
-    request({url:'http://localhost:20000/fail',headers: {
+    request({url:`${protocol}://localhost:20000/fail`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
@@ -196,7 +197,7 @@ step('changes', function(done) {
   });
 
   step('ping-state-fail', function(done) {
-    request({url:'http://localhost:20000/ping',headers: {
+    request({url:`${protocol}://localhost:20000/ping`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
@@ -206,7 +207,7 @@ step('changes', function(done) {
   });
 
   step('fix', function(done) {
-    request({url:'http://localhost:20000/fix',headers: {
+    request({url:`${protocol}://localhost:20000/fix`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
@@ -216,9 +217,17 @@ step('changes', function(done) {
   });
 
   step('ping-2do-ok', function(done) {
-    request({url:'http://localhost:20000/ping',headers: {
+    request({url:`${protocol}://localhost:20000/ping`,headers: {
         'x-access-token': token,
         'ux':user}} , function(error, response, body) {
+        console.info("\t\tResponse: ",response.body);
+        expect(response.statusCode).to.equal(200);
+        done();
+    });
+  });
+
+  step('general-stats', function(done) {
+    request(`${protocol}://localhost:20001/_stats` , function(error, response, body) {
         console.info("\t\tResponse: ",response.body);
         expect(response.statusCode).to.equal(200);
         done();

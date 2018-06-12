@@ -13,12 +13,12 @@ let changes={}
 let indexes=['app_rol'];
 let pingResponse='pong';
 
-var router=restApiUtil.init(app);
+let router=restApiUtil.init(app);
 
 
 function initChangesControl(){
     if(JSON.stringify(changes)==='{}'){
-       for(var i=0; i<indexes.length; i++){
+       for(let i=0; i<indexes.length; i++){
           changes[indexes[i]]='20160101T000000Z';
        }
     }
@@ -61,7 +61,7 @@ function findById(request, response){
             elasticController.findById(index,id).then(result =>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService,)
             ,error=>{
                     R.logger.fatal(`No es posible realizar la búsqueda del id[${id}]`, error);
-                    restApiUtil.sendResponse(response,thisService,R.constants.HTTP_INTERNAL,error,body,thisService);
+                    restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,error,body,thisService);
                     }),
         (errortoken)=>{
             R.logger.fatal('errortoken:', errortoken)
@@ -88,9 +88,9 @@ function add(request, response){
                         body["user_created"]=request.headers.ux;
                         elasticController.add(index,id,body).then(resultAdd => { 
                                             updateChangesControl(index);
-                                            restApiUtil.sendResponse(response, R.constants.HTTP_OK, resultAdd, request.body,thisService);
+                                            restApiUtil.sendResponse(response,R.constants.HTTP_OK, resultAdd, request.body,thisService);
                                         }, error => {
-                                            restApiUtil.sendResponse(response, R.constants.HTTP_INTERNAL, error, request.body,thisService);
+                                            restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, request.body,thisService);
                                         }); 
                     }else{
                         R.logger.error('Duplicated key', url);
@@ -186,44 +186,7 @@ function deleteById(request, response){
     );
 }
 
-
-
-function deleteById_back(request, response){
-    var index=request.params.index, id=request.params.id;
-    var thisService='/'+index+'/'+id+'-DELETE';
-    
-    var deleteFunct =function(){
-                elasticController.findById(index,id).then(
-                        function(result){
-                            if(result.responses[0].hits.total==1){
-                               elasticController.deleteById(index,index,id).then(function(result){
-                                     restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
-                                                       }).fail(function(errordelete){
-                                                         R.logger.error('No fue posible eliminar el objeto['+index+']['+id+']:' + errordelete);
-                                                         restApiUtil.sendResponse(request.body,response,thisService,errordelete.status,errordelete);
-                                                       });
-                            }else{
-                            R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
-                            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_NOT_FOUND,R.constants.ERROR_NOT_FOUND);
-                            }
-                    }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda del registro a borrar['+index+']['+id+']:' +JSON.stringify(error));
-                            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
-                    });
-    }
-
-    
-    var fail=function(){
-       restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_UNAUTHORIZED,'');        
-    }
-    
-    var params={
-        callback:{success:deleteFunct, fail: fail}        
-        ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.delete'}
-        };
-    R.logger.trace(thisService+'->'+JSON.stringify(params));
-    restApiUtil.execute(params);    
-}
+router.route('/_stats').get( (request, response)=> restApiUtil.sendResponse(response,R.constants.HTTP_OK,{pid:process.pid, memory_usage: process.memoryUsage(), cpu_usage:process.cpuUsage(), args:process.argv},request.body,'stats')); /* xDoc-NoDoc */
 
 router.route('/:index/:id').put(function(request, response) { //xDoc-Desc:Agrega un registro en el indice <b>:index</b>  y el id <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example: {"cve": "1","description":"Activo"}
     add(request,response);
@@ -267,5 +230,5 @@ router.route('/fix').get(function(request, response) {/* xDoc-NoDoc */
              response.status(200).send('[bitacora]corregido!!!!!!!!!!!!!!!');
 });
 
-var _PORT_=R.properties.get(rest+'.PORT');
+let _PORT_=R.properties.get(rest+'.PORT');
 restApiUtil.startService(rest,app, router ,_PORT_);

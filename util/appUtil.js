@@ -1,5 +1,5 @@
 'use strict;'
- var dateFormat = require('date-format');
+ let dateFormat = require('date-format');
 
  exports.getCurrentDateForElastic = ()=> dateFormat.asString('yyyyMMddThhmmssZ', new Date());
 

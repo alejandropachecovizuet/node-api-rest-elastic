@@ -1,5 +1,4 @@
 'use strict';
-const colors = require('colors');
 const R=require("./rest-api-requires");
 
 const levels={
