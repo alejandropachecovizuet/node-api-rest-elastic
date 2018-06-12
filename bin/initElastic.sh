@@ -68,6 +68,18 @@ curl -X PUT http://localhost:9200/app_user/init/test -H 'Content-Type: applicati
 	"roles":[{"rol":"test"}],
 	"attributes": {		}
 }'
+curl -X PUT http://localhost:9200/app_rol/rol/test -H 'Content-Type: application/json' -d \
+'{"role": "test",
+ "restrictions":[{"restriction":"app.db.app_test.add"},
+                {"restriction":"app.db.app_test.delete"},
+                {"restriction":"app.db.app_test.update"},
+                {"restriction":"app.db.app_test.search"},
+                {"restriction":"app.db.app_testx.delete"},
+                {"restriction":"app.db.app_testx.update"},
+                {"restriction":"app.db.app_testx.search"}
+		       ]
+	,"user_created":"init"
+}'
 
 rm json/user.json.tmp
 echo "Nuevos indices ....";

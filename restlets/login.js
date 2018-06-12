@@ -14,35 +14,39 @@ var rest='login',name='';
 var router=restApiUtil.init(app);
 
 router.route('/authenticate').post(function(request, response) { //xDoc-Desc:Authenticación del usuario xDoc-JSON-Example:{"username":"luisXV", "pwd":"123456"}  xDoc-Response:Usuario + Token 
-       var servicex=rest+name;  
-        jsonvalidator.validateVsSchema('authenticate_schema',request.body,function(error){
-            restApiUtil.sendResponse(request.body,response,servicex,R.constants.HTTP_BAD_REQUEST,error);        
-        });
-    
-        if(request.body == null || request.body == {} || request.body.username == undefined || request.body.pwd == undefined){
-                R.logger.error("Bad Request-authenticate:" + JSON.stringify(request.body));
-                restApiUtil.sendResponse(request.body,response,servicex,R.constants.HTTP_BAD_REQUEST,"");
-        }else{
-//                controller.authenticate(request.body).then(
-                var queryObj={"query": {"bool": {"must": [{"match": {"_id": request.body.username}},{ "match": { "pwd":  request.body.pwd }}]}}};    
-               elasticController.find('app_user',undefined,queryObj).then(
-                    function(result){
+        authenticate(request, response);    
+});
+
+function authenticate(request, response){
+        const {method, url, body, body :{username, pwd}}=request;
+        const thisService=`[${method}]${url}`;
+        
+        R.logger.debug("Authenticate service:", thisService);
+
+        jsonvalidator.validateVsSchema("authenticate_schema",body).then(resultValidateSchema=>{
+                let queryObj={"query": {"bool": {"must": [{"match": {"_id": username}},{ "match": { "pwd":  pwd }}]}}};    
+                elasticController.find('app_user',queryObj).then(result=>{
                         if(result.responses[0].hits.total > 0){
-                           R.logger.debug("Se autentico el usuario " + request.body.username + " correctamente!!!");
-                           var resx=result.responses[0].hits.hits[0];
-                            resx.token=R.jwtController.sign(resx).token;
-                           restApiUtil.sendResponseWithToken(request.body,response,servicex,R.constants.HTTP_OK,"["+JSON.stringify(resx)+"]",resx.token);
+                                R.logger.debug(`Se autentico el usuario ${username} correctamente!!!`);
+                                var resx=result.responses[0].hits.hits[0];
+                                resx.token=R.jwtController.sign(resx).token;
+                                restApiUtil.sendResponse(response,R.constants.HTTP_OK,'', body, thisService,resx.token);
                         }else{
-                           request.body.pwd='************';
-                           R.logger.error('No existe el usuario/password indicado:' +JSON.stringify(request.body));
-                           restApiUtil.sendResponse(request.body,response,servicex,R.constants.HTTP_UNAUTHORIZED,{});
+                                request.body.pwd='************';
+                                R.logger.error('No existe el usuario/password indicado:',body);
+                                restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, '', body,thisService);
                         }
-                }, function(error){
+                }, error=>{
                         R.logger.error("No se authentico el usuario:" + request.body.username + "->" + error);
                         restApiUtil.sendResponse(request.body,response,servicex,R.constants.HTTP_UNAUTHORIZED,error);
+                })
+
+        },errors=> {
+                R.logger.error('No paso la validación de esquema', url);
+                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,error);     
                 });
-        }    
-});
+};
+    
 
 router.route('/login/stat').get(function(request, response) { //xDoc-NoDoc
     var usage = require('usage');

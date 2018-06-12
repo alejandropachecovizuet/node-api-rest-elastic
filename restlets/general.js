@@ -2,22 +2,22 @@
 /*
  xDocRestName:General
  * */
-var R = require("../util/rest-api-requires");
-var restApiUtil = require("../util/restApiUtil");
-var elasticController = require("../controllers/elasticsearch");
-var jsonvalidator = require('../controllers/jsonvalidator');
-var appUtil = require('../util/appUtil');
-var app = R.express();
-var rest='general';
-var changes={}
-var indexes=['app_rol'];
-var pingResponse='pong';
+let R = require("../util/rest-api-requires");
+let restApiUtil = require("../util/restApiUtil");
+let elasticController = require("../controllers/elasticsearch");
+let jsonvalidator = require('../controllers/jsonvalidator');
+let appUtil = require('../util/appUtil');
+let app = R.express();
+let rest='general';
+let changes={}
+let indexes=['app_rol'];
+let pingResponse='pong';
 
 var router=restApiUtil.init(app);
 
 
 function initChangesControl(){
-    if(JSON.stringify(changes)=='{}'){
+    if(JSON.stringify(changes)==='{}'){
        for(var i=0; i<indexes.length; i++){
           changes[indexes[i]]='20160101T000000Z';
        }
@@ -25,180 +25,170 @@ function initChangesControl(){
 }
 function updateChangesControl(index){
     initChangesControl();
-    R.logger.fatal(changes);
-    R.logger.fatal(changes[index]);
     if(changes[index]!=null){
         changes[index]=appUtil.getCurrentDateForElastic();
+        R.logger.debug('apply changes',index,changes[index]);
     }
-    R.logger.fatal(changes);
 }
 
 function find(request, response){
-    var index=request.params.index, type=request.params.type;//||request.params.index;
-    var thisService='/'+index+'/'+type+'/_search -POST(search)';
-    var findCallback =function(){
-        elasticController.find(index,type,request.body).then(
-                function(result){
-                    //R.logger.debug('Resultado de la busqueda:' +result);
-                    restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result.responses[0].hits);
-            }, function(error){
-                    R.logger.fatal('No es posible realizar la búsqueda + ' +JSON.stringify(error));
-                    restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
-            });
-    }
+    const {method, url, body, params: {index, id}, headers}=request;
+    const thisService=`[${method}]${url}`;
     
-    var failCallback=function(){
-       restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_UNAUTHORIZED,'');        
-    }
+    R.logger.debug("findById Service:", index, thisService);
     
-    var params={
-        callback:{success:findCallback, fail: failCallback}        
-        ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.search'}
-        };
-    R.logger.trace(thisService+'->'+JSON.stringify(params));
-    restApiUtil.execute(params);    
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.search`}).then(resultToken=>
+        elasticController.find(index,body,index).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService)
+        ,error =>{
+                R.logger.fatal(`No es posible realizar la búsqueda:`,error);
+                restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,error,body,thisService);
+        }),errortoken=>{
+            R.logger.fatal('errortoken:', errortoken)
+            restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, errortoken, body,thisService);        
+            }
+    );
 }
+
+
 
 function findById(request, response){
-    var index=request.params.index,id=request.params.id;
-    var thisService='/'+index+'/_searchById/'+id+' -POST(search)';
-    R.logger.trace(thisService);
-    var findCallback =function(){
-        elasticController.findById(index,id).then(
-                function(result){
-                    restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result.responses[0].hits);
-            }, function(error){
-                    R.logger.fatal('No es posible realizar la búsqueda del id['+id+']->' +JSON.stringify(error));
-                    restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
-            });
-    }
+    const {method, url, body, params: {index, id}, headers}=request;
+    const thisService=`[${method}]${url}`;
     
-    var fail=function(){
-       restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_UNAUTHORIZED,'');        
-    }
+    R.logger.debug("findById Service:", index, thisService);
     
-    var params={
-        callback:{success:findCallback, fail: fail}        
-        ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.search'}
-        };
-    R.logger.trace(thisService+'->'+JSON.stringify(params));
-    restApiUtil.execute(params);    
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.search`}).then(resultToken=>
+            elasticController.findById(index,id).then(result =>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService,)
+            ,error=>{
+                    R.logger.fatal(`No es posible realizar la búsqueda del id[${id}]`, error);
+                    restApiUtil.sendResponse(response,thisService,R.constants.HTTP_INTERNAL,error,body,thisService);
+                    }),
+        (errortoken)=>{
+            R.logger.fatal('errortoken:', errortoken)
+            restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, errortoken, body,thisService);        
+            }
+    );
 }
+
+
 
 function add(request, response){
-    var isvalidJson=true;
-    var index=request.params.index, id=request.params.id;
-    var thisService='/'+index+'/'+id+'-PUT(add)';
+    const {method, url, body, params: {index, id}, headers}=request;
+    const thisService=`[${method}]${url}`;
     
-    if(index.indexOf("app_") >-1){
-        var addCallback =function(){
-
-            jsonvalidator.validateVsSchema(index,request.body,function(error){
-                R.logger.error('No paso la validación de esquema:'+'['+index+']'+error);
-                isvalidJson=false;
-                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,error);     
-            });
-
-            if(isvalidJson){
-                elasticController.findById(index ,id).then(
-                        function(result){
-                            if(result.responses[0].hits==undefined || result.responses[0].hits.total==0){
-                            request.body.created=appUtil.getCurrentDateForElastic();
-                            request.body.user_created=request.headers.ux;
-                            elasticController.add(index,index,id,request.body).then(function (result) { 
-                                                updateChangesControl(index);
-                                                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
-                                          }); 
-                            }else{
-                            R.logger.error('Duplicated key:['+index+']['+id+']');
-                                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_DUPLICATED,'{"error":"'+ R.constants.ERROR_DUPLICATED_KEY+'"}');
-                            }
-                    }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda['+index+']['+id+']:' +JSON.stringify(error));
-                            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
-                    });
-   
+    R.logger.debug("Add Service:", index, thisService);
+    
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
+        jsonvalidator.validateVsSchema(index, body).then(()=>
+            elasticController.findById(index ,id).then(
+                resultFind=>{
+                    R.logger.debug('Si pudo realizar la consulta del registro');
+                    if(resultFind.responses[0].hits==undefined || resultFind.responses[0].hits.total==0){
+                        body["time_created"]=appUtil.getCurrentDateForElastic();
+                        body["user_created"]=request.headers.ux;
+                        elasticController.add(index,id,body).then(resultAdd => { 
+                                            updateChangesControl(index);
+                                            restApiUtil.sendResponse(response, R.constants.HTTP_OK, resultAdd, request.body,thisService);
+                                        }, error => {
+                                            restApiUtil.sendResponse(response, R.constants.HTTP_INTERNAL, error, request.body,thisService);
+                                        }); 
+                    }else{
+                        R.logger.error('Duplicated key', url);
+                        restApiUtil.sendResponse(response, R.constants.HTTP_DUPLICATED, R.constants.ERROR_DUPLICATED_KEY, body,thisService,);
+                    }
+            }, error=>{
+                    R.logger.fatal('No es posible realizar la búsqueda', url, error,);
+                    restApiUtil.sendResponse(response, R.constants.HTTP_NOT_FOUND, error, request.body,thisService);
+            }),        
+            error=>{
+                R.logger.fatal('No cumple con el esquema', error,);
+                restApiUtil.sendResponse(response, R.constants.HTTP_BAD_REQUEST, error, request.body,thisService);
+        }),
+        (errortoken)=>{
+            R.logger.fatal('errortoken:', errortoken)
+            restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, errortoken, body,thisService);        
             }
-            };
-
-        var fail=function(){
-            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_UNAUTHORIZED,'');        
-        };
-
-        var params={
-            callback:{success:addCallback, fail: fail}        
-            ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.add'}
-            };
-        R.logger.trace(thisService+'->'+JSON.stringify(params));
-        restApiUtil.execute(params);    
-    }else{
-         restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS);
-    }
+    );
 }
 
+
 function update(request, response){
-    var isvalidJson=true;
-    var index=request.params.index ,id=request.params.id;
+    const {method, url, body, params: {index, id}, headers}=request;
+    const thisService=`[${method}]${url}`;
     
-    var thisService='/'+index+'/'+id+'-UPDATE';
-    console.log("Service--->" + thisService);
-    if(request.body!='undefined' && JSON.stringify(request.body)!='{}' && index.indexOf("app_") >-1){
-        console.log("1");
-        var addCallback1 =function(){
-            console.log('successs!!!!!');
-        }
-        var addCallback =function(){
-                console.log("2");
-            jsonvalidator.validateVsSchemaForUpdate(index,request.body,function(error){
-                console.log("3");
-                R.logger.error('No paso la validación de esquema:'+error);
-                isvalidJson=false;
-                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,error);     
-            });
-            console.log("4");
-
-            if(isvalidJson){
-                console.log("Find record ...");
-                elasticController.findById(index,id).then(
-                        function(result){
-                            if(result.responses[0].hits.total==1){
-                            request.body.updated=appUtil.getCurrentDateForElastic();
-                            request.body.user_updated=request.headers.ux;
-                            console.log("updating in elasticsearch ...");
-                            elasticController.add(index,index,id,request.body).then(function (result) { 
+    R.logger.debug("Add Service:", index, thisService);
+    
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
+        jsonvalidator.validateVsSchema(index, body).then(()=>
+            elasticController.findById(index ,id).then(
+                resultFind=>{
+                    R.logger.debug('Si pudo realizar la consulta del registro');
+                    if(resultFind.responses[0].hits.total==1){
+                        let data = resultFind.responses[0].hits.hits[0]._source;
+                        body["time_updated"]=appUtil.getCurrentDateForElastic();
+                        body["user_updated"]=request.headers.ux;
+                        body["time_created"]=data.time_created;
+                        body["user_created"]=data.user_created;
+                        elasticController.add(index,id,body).then(resultAdd => { 
                                             updateChangesControl(index);
-                                            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,result);
-                                          }); 
-                            }else{
-                                R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
-                                restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_NOT_FOUND,R.constants.ERROR_NOT_FOUND);
-                            }
-                    }, function(error){
-                            R.logger.fatal('No es posible realizar la búsqueda del registro a actualizar['+index+']['+id+']:' +JSON.stringify(error));
-                            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_OK,error);
-                    });
+                                            restApiUtil.sendResponse(response, R.constants.HTTP_OK, resultAdd, request.body,thisService);
+                                        }, error => {
+                                            restApiUtil.sendResponse(response, R.constants.HTTP_INTERNAL, error, request.body,thisService);
+                                        }); 
+                    }else{
+                        R.logger.error('Duplicated key', url);
+                        restApiUtil.sendResponse(response, R.constants.HTTP_DUPLICATED, R.constants.ERROR_DUPLICATED_KEY, body,thisService,);
+                    }
+            }, error=>{
+                    R.logger.fatal('No es posible realizar la búsqueda', url, error,);
+                    restApiUtil.sendResponse(response, R.constants.HTTP_NOT_FOUND, error, request.body,thisService);
+            }),        
+            error=>{
+                R.logger.fatal('No cumple con el esquema', error,);
+                restApiUtil.sendResponse(response, R.constants.HTTP_BAD_REQUEST, error, request.body,thisService);
+        }),
+        (errortoken)=>{
+            R.logger.fatal('errortoken:', errortoken)
+            restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, errortoken, body,thisService);        
             }
-   
-            }
-
-        var fail=function(){
-            restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_UNAUTHORIZED,'');        
-        }
-
-        var params={
-            callback:{success:addCallback, fail: fail}        
-            ,secure:{headers:request.headers, restriction:'app.db.'+request.params.index+'.update'}
-            };
-        R.logger.trace(thisService+'->'+JSON.stringify(params));
-        console.log('excecuting ....')
-        restApiUtil.execute(params);    
-    }else{
-         restApiUtil.sendResponse(request.body,response,thisService,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS);
-    }
+    );
 }
 
 
 function deleteById(request, response){
+    const {method, url, body, params: {index, id}, headers}=request;
+    const thisService=`[${method}]${url}`;
+    
+    R.logger.debug("deleteById Service:", index, thisService);
+    
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
+            elasticController.findById(index ,id).then(
+                resultFind=>{
+                    R.logger.debug('Si pudo realizar la consulta del registro');
+                    if(resultFind.responses[0].hits.total==1){
+                        elasticController.deleteById(index,index,id).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService)
+                          ,errordelete=>{
+                                R.logger.error('No fue posible eliminar el objeto['+index+']['+id+']:' + errordelete);
+                                restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,errordelete,body,thisService);
+                      });
+                     }else{
+                     R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
+                     restApiUtil.sendResponse(response,R.constants.HTTP_NOT_FOUND,`No fue posible eliminar el objeto[${index}][${id}]`,body,thisService);
+                     }
+            }, error=>{
+                    R.logger.fatal('No es posible realizar la búsqueda', url, error,);
+                    restApiUtil.sendResponse(response, R.constants.HTTP_NOT_FOUND, error, request.body,thisService);
+            }),
+        (errortoken)=>{
+            R.logger.fatal('errortoken:', errortoken)
+            restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, errortoken, body,thisService);        
+            }
+    );
+}
+
+
+
+function deleteById_back(request, response){
     var index=request.params.index, id=request.params.id;
     var thisService='/'+index+'/'+id+'-DELETE';
     
@@ -248,7 +238,6 @@ router.route('/:index/_searchById/:id').get(function(request, response) { //xDoc
 });
 
 router.route('/:index/:id/_update').put(function(request, response) { //xDoc-Desc:Actualiza el registro indicado en <b>:id(_id de elasticsearch)</b> del catalogo <b>:index</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token xDoc-JSON-Example:<b>NO_BODY</b> 
-    console.log("updating ..................");
     update(request,response);
 });
 
@@ -258,23 +247,17 @@ router.route('/:index/:id').delete(function(request, response) { //xDoc-Desc:Bor
 
 router.route('/changes').get(function(request, response) { //xDoc-Desc:Regresa la fecha última en que fuerón actualizados los catalogos
     initChangesControl();
-    restApiUtil.sendResponse(request.body,response,'/changes',R.constants.HTTP_OK,changes);
+    restApiUtil.sendResponse(response,R.constants.HTTP_OK,changes,request.body,'/changes');
 });
 
-router.route('/ping') .post(function(request, response) { /* xDoc-NoDoc */
+router.route('/ping').get(function(request, response) { /* xDoc-NoDoc */
 		     if(pingResponse=='pong'){
                 response.status(200).send(pingResponse);
 				 }else{
                 response.status(409).send(pingResponse);
 				 }
 });
-router.route('/getPing').get(function(request, response) { /* xDoc-NoDoc */
-		     if(pingResponse=='pong'){
-                response.status(200).send(pingResponse);
-				 }else{
-                response.status(409).send(pingResponse);
-				 }
-});
+
 router.route('/fail').get(function(request, response) {/* xDoc-NoDoc */
 		     pingResponse='pong...pong...pong...pong...';
              response.status(200).send('fallando .....');

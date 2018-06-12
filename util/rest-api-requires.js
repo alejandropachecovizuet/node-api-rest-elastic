@@ -4,9 +4,12 @@ function define(name, value) {
         enumerable: true
     });
 }
+
+  
 var PropertiesReader = require('properties-reader');
 var properties = PropertiesReader('./app.properties')
 define("properties", properties);
+exports.properties=properties;
 
 define("logger", require('./logger'));
 define("jwtController", require('../controllers/jwt'));

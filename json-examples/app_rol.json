@@ -33,6 +33,11 @@ Add:
 {"role": "Proveedor",
 	 "restrictions":[{}]
  }
+ {"role": "test",
+    "restrictions":[{"restriction":"app.db.app_user.add"},
+               {"restriction":"app.db.app_user.update"},
+               {"restriction":"app.db.app_user.search"}]
+}
 
 Search:
 {"query": {"match_all": {}}}

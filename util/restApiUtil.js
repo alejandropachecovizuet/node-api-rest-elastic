@@ -1,74 +1,82 @@
 'use strict';
-var R = require("./rest-api-requires");
-var fs = require('fs');
-var elasticController = require("../controllers/elasticsearch");
-var jsonvalidator= require('../controllers/jsonvalidator');
-var timeout = require('connect-timeout');
-var allRoles;
+let R = require("./rest-api-requires");
+let fs = require('fs');
+let elasticController = require("../controllers/elasticsearch");
+let jsonvalidator= require('../controllers/jsonvalidator');
+let timeout = require('connect-timeout');
+let allRoles;
 
 //var restApiUtil={
-function validatePermision(user,restriction,userRoles,allRolesx){
-    var deferred = R.q.defer();
-    var found=false;
-    R.logger.trace('validatePermision...'+restriction+','+JSON.stringify(userRoles));
-    if(allRolesx!=null){
-       for(var i=0; i<allRolesx.length; i++){
-           var rolDB=allRolesx[i]._source.role;
-           var restrictions=allRolesx[i]._source.restrictions;
-           //console.log('i['+i+']:' + rolDB + "->" + JSON.stringify(restrictions));
-           for(var j=0; j<userRoles.length; j++){
-               var userRol=userRoles[j].rol;
-//               console.log('j['+j+']:' + userRol  + '->' +rolDB);
-               if(rolDB==userRol){
-                   for(var k=0; k<restrictions.length; k++){
-                       var restrictionDB=restrictions[k].restriction;
-  //                     console.log('k['+k+']:' + restrictionDB + '->'+restriction);
-                       if(restrictionDB==restriction){
-                         R.logger.debug('restriccion['+restriction+'] encontrada en rol['+userRol+']');
-                        found=true;
+function validatePermision(user,restrictionUser,userRoles,allRolesx){
+    let found=false;
+    R.logger.debug(`validatePermision...${restrictionUser}`,userRoles);
+
+    let promise = new Promise((resolve, reject)=>{
+        if(allRolesx!=null){
+            for(var i=0; i<allRolesx.length; i++){
+                var rolDB=allRolesx[i]._source.role;
+                var restrictions=allRolesx[i]._source.restrictions;
+                //console.log('i['+i+']:', rolDB  ,restrictions);
+                for(var j=0; j<userRoles.length; j++){
+                    var userRol=userRoles[j].rol;
+                    //console.log('j['+j+']:',userRol,rolDB);
+                    if(rolDB==userRol){
+                        console.debug(`Rol encontrado: ${userRol}`)
+                        for(var k=0; k<restrictions.length; k++){
+                            var restrictionDB=restrictions[k].restriction;
+                           if(restrictionDB===restrictionUser){
+                              R.logger.debug(`restriccion[${restrictionUser}] encontrada en rol[${userRol}]`);
+                             found=true;
+                            }
                        }
-                  }
+                    }
                }
-          }
-      }
-   }
-    if(found){
-        R.logger.info('El usuario['+user+'] SI tiene permisos para la restricción:' + restriction);
-        deferred.resolve({found: true});
-    }else{
-        R.logger.error('El usuario['+user+'] NO tiene permisos para la restricción:' + restriction);
-        deferred.reject({found: false});
-    }
-    return deferred.promise;
+           }
+        }
+         if(found){
+             R.logger.info(`El usuario[${user}] SI tiene permisos para la restricción: ${restrictionUser}`);
+             resolve();
+         }else{
+             R.logger.error(`El usuario[${user}] NO tiene permisos para la restricción: ${restrictionUser}`);
+             reject('El usuario NO tiene permisos');
+         }
+    });
+    return promise;
+    
   }
 
-function hasPermisson(user, userRoles,restriction){
-  var deferred = R.q.defer();
-  if(allRoles == null){
-      R.logger.trace('Obteniendo los roles de base de datos');
-      elasticController.find(R.constants.INDEX_ROL,undefined,{}).then(
-        function(result){
-            allRoles=result.responses[0].hits.hits;
-            R.logger.trace('Numero de roles encontrados:' +allRoles.length);
-            validatePermision(user,restriction,userRoles,allRoles).then(
-                function(resultValidate){
-                    deferred.resolve({valid: true});
-                }).fail(function(errorvaliadtePermission){
-                    R.logger.error('Error en la validación de permisos:'+ errorvaliadtePermission);
-                    deferred.reject({valid: false});
-                });
-    }, function(error){
-            R.logger.fatal('No es posible buscar los roles en base de datos + ' +error);
+  let hasPermisson = (user, userRoles,restriction)=>{
+  let promise =new Promise((resolve, reject) => {
+    if(allRoles == null){
+        R.logger.debug('Obteniendo los roles de base de datos');
+        elasticController.find(R.constants.INDEX_ROL,{}).then(result=>{
+                allRoles=result.responses[0].hits.hits;
+                R.logger.debug('Numero de roles encontrados:' +allRoles.length);
+                validatePermision(user,restriction,userRoles,allRoles).
+                    then( resultValidate=>{
+                        resolve();
+                    }, errorvaliadtePermission =>{
+                        R.logger.error('Error en la validación de permisos:'+ errorvaliadtePermission);
+                        reject(errorvaliadtePermission);
+                    });
+        }, error=>{
             allRoles=null;
-            deferred.reject({valid: false});
-    });
-  }else{
-      R.logger.trace('Obteniendo los roles de la memoria->' + allRoles.length);
-      return validatePermision(user,restriction,userRoles,allRoles);
-  }    
-    return deferred.promise;
-}
-exports.hasPermisson = hasPermisson;
+            reject('No es posible buscar los roles en base de datos' +error);
+        });
+    }else{
+        R.logger.debug('Obteniendo los roles de la memoria->' + allRoles.length);
+        validatePermision(user,restriction,userRoles,allRoles).
+        then( resultValidate=>{
+            resolve();
+        }, errorvaliadtePermission =>{
+            R.logger.error('Error en la validación de permisos:'+ errorvaliadtePermission);
+            reject(errorvaliadtePermission);
+        });
+        }    
+  });
+  return promise;
+};
+exports.hasPermisson=hasPermisson;
 
 function haltOnTimedout(request, response, next){
   if (!request.timedout)
@@ -120,53 +128,36 @@ function startService(service,app,router, port){
         var http = require('http');
         var httpServer = http.createServer(app);
         httpServer.listen(port, function() {  
-        R.logger.info('['+service+'](HTTP)Node server running on ' + port + ', proceso: ' + process.pid);
+        R.logger.info(`[${service}](HTTP)Node server running on : ${port} , proceso: ${process.pid}`);
         });
     }
 }
 exports.startService = startService;
-    
-function execute(params){
-    console.log("--->" + params.secure.restriction + "-->" +params.secure.restriction.includes('app_test'))
-    if(params.secure!=null && !params.secure.restriction.includes('app_test')){
-            var token = params.secure.headers['x-access-token'];
-            var tokenusername = params.secure.headers['ux'];
-            R.jwtController.verify(token,tokenusername).then(function(resultValidationToken){
-                hasPermisson(tokenusername, resultValidationToken.roles, params.secure.restriction).then(function(resultHasPermission){
-                    R.logger.trace('calling callback xxxx...');
-                    params.callback.success();
-                    }).fail(function(errorHasPermission){
-                        R.logger.error('No tiene permisos '+tokenusername+' con los roles'+JSON.stringify( resultValidationToken.roles)+', restriccion:' + params.secure.restriction);  
-                        //TODO:Quitar comentario
-                       // params.callback.fail();
-                    });
-                }).fail(function(errorToken){
-                    R.logger.fatal('errorToken::'+JSON.stringify(errorToken));
-                    params.callback.fail();
-                });
+
+exports.validateTokenAndPermission= ({headers, restriction})=>{
+    let promise = new Promise((resolve, reject) => {
+//        if(restriction  && !restriction.includes('app_test')){
+    if(restriction){    
+            let token = headers['x-access-token'];
+            let tokenusername = headers['ux'];
+            R.jwtController.verify(token,tokenusername).then( roles => {
+                hasPermisson(tokenusername, roles, restriction).then(resultHasPermission =>{
+                    resolve();
+                }, errorHasPermission =>reject(errorHasPermission));
+            }, (errorToken)=>reject(errorToken));
        }else{
-            params.callback.success();
+           resolve();
        }
-   }
-exports.execute = execute;
-
-function sendResponse(body,response, service ,httpCode, obj){
-    if(body.pwd!=undefined){
-        body.pwd="*********";
+   });
+   return promise;
+}
+exports.sendResponse = (response, httpCode, bodyOut, bodyIn, service, token='') => {
+    if(bodyIn.pwd){
+        bodyIn.pwd="*********";
     }
-    //R.logger.info('{service-response{service:'+service+',body:'+body+',httpCode:'+httpCode+',response:'+obj+'}}');
-    response.status(httpCode).send(obj);
+    R.logger.info(`service-response: ${service}`,httpCode, bodyOut, bodyIn, token);
+    if(token){
+        response.setHeader("x-access-token", token);
     }
-exports.sendResponse = sendResponse;
-
-function sendResponseWithToken(body,response, service ,httpCode, obj, token){
-    console.log(body, service ,httpCode, obj, token);
-    if(body.pwd!=undefined){
-        body.pwd="*********";
-    }
-    //R.logger.info('{service-response{service:'+service+',body:'+body+',httpCode:'+httpCode+'}}');
-    response.setHeader("x-access-token", token);
-
-    response.status(httpCode).send("");
-    }
-exports.sendResponseWithToken = sendResponseWithToken;
+    response.status(httpCode).send(bodyOut);
+}
