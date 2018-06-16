@@ -25,8 +25,10 @@ define("HTTP_INTERNAL", 500);
 define("ERROR_TOKEN_INVALID", "'Token invalid!!!.'"); //seconds
 define("ERROR_REJECT_AUTH", 'Authentication failed. User not found.');
 define("ERROR_REJECT_INVALID_PARAMS", 'Invalid params!');
-define("ERROR_DUPLICATED_KEY", 'Registro duplicado');
-define("ERROR_NOT_FOUND", 'No existe el registro');
+define("ERROR_DUPLICATED_KEY", 'Duplicated key');
+define("ERROR_NOT_FOUND", 'Record not found');
 
 /**** Indexes *****/
-define("INDEX_ROL", "app_rol"); 
+define("INDEX_ROL", "roles"); 
+define("INDEX_PROJECT", "projects"); 
+define("INDEX_USER", "users"); 

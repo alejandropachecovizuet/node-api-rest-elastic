@@ -1,42 +1,38 @@
 Add:
 {"role": "SuperAdmin",
- "restrictions":[{"restriction":"app.db.app_user.add"},
-                {"restriction":"app.db.app_user.delete"},
-                {"restriction":"app.db.app_user.update"},
-                {"restriction":"app.db.app_user.search"},
-				{"restriction":"app.db.app_rol.add"},
-                {"restriction":"app.db.app_rol.delete"},
-                {"restriction":"app.db.app_rol.update"},
-                {"restriction":"app.db.app_rol.search"},
-				{"restriction":"app.db.app_proveedor.add"},
-                {"restriction":"app.db.app_proveedor.delete"},
-                {"restriction":"app.db.app_proveedor.update"},
-                {"restriction":"app.db.app_proveedor.search"}
+ "restrictions":[{"restriction":"app.db.users.add"},
+                {"restriction":"app.db.users.delete"},
+                {"restriction":"app.db.users.update"},
+                {"restriction":"app.db.users.search"},
+				{"restriction":"app.db.roles.add"},
+                {"restriction":"app.db.roles.delete"},
+                {"restriction":"app.db.roles.update"},
+                {"restriction":"app.db.roles.search"}
 		       ]
 }	
 {"role": "AdminApp",
-	 "restrictions":[{"restriction":"app.db.app_user.add"},
-                {"restriction":"app.db.app_user.update"},
-                {"restriction":"app.db.app_user.search"}]
+	 "restrictions":[{"restriction":"app.db.users.add"},
+                {"restriction":"app.db.users.update"},
+                {"restriction":"app.db.users.search"}]
  }
 {"role": "Invitado",
-	 "restrictions":[{"restriction":"app.db.app_user.add"},
-                {"restriction":"app.db.app_user.update"},
-                {"restriction":"app.db.app_user.search"}]
+	 "restrictions":[{"restriction":"app.db.users.add"},
+                {"restriction":"app.db.users.update"},
+                {"restriction":"app.db.users.search"}]
  }
 {"role": "Organizador",
-	 "restrictions":[{"restriction":"app.db.app_user.add"},
-                {"restriction":"app.db.app_user.update"},
-                {"restriction":"app.db.app_user.search"}]
+	 "restrictions":[{"restriction":"app.db.users.add"},
+                {"restriction":"app.db.users.update"},
+                {"restriction":"app.db.users.search"}]
  }
 
 {"role": "Proveedor",
 	 "restrictions":[{}]
  }
  {"role": "test",
-    "restrictions":[{"restriction":"app.db.app_user.add"},
-               {"restriction":"app.db.app_user.update"},
-               {"restriction":"app.db.app_user.search"}]
+    "restrictions":[{"restriction":"app.db.users.add"},
+               {"restriction":"app.db.users.update"},
+               {"restriction":"app.db.users.search"}]
 }
 
 Search:
