@@ -16,11 +16,12 @@ router.route('/authenticate').post(function(request, response) { //xDoc-Desc:Aut
         authenticate(request, response);    
 });
 
-router.route('/_stats').get( (request, response)=> restApiUtil.sendResponse(response,R.constants.HTTP_OK,{pid:process.pid, memory_usage: process.memoryUsage(), cpu_usage:process.cpuUsage(), args:process.argv},request.body,'stats')); /* xDoc-NoDoc */    
+router.route('/_stats').get( (request, response)=> restApiUtil.stats(request,response)); /* xDoc-NoDoc */    
 
 function authenticate(request, response){
         const {method, url, body}=request;
         const thisService=`[${method}]${url}`;
+        let startTime = new Date().getTime();
         R.logger.debug(thisService);
 
         restApiUtil.validateAll(['schema'],request,{schema:'authenticate_schema'}).then(
@@ -32,7 +33,7 @@ function authenticate(request, response){
                                 try {
                                         pwdEncripted=R.jwtController.encrypt(R.jwtController.decrypt(pwd,projectId),phrase);
                                 } catch (error) {
-                                        restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'Password incorrect', body,thisService);
+                                        restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'Password incorrect', body,thisService,startTime);
                                 }
                                 let queryObj={"query": {"bool": {"must": [{"match": {"_id": email}},{ "match": { "pwd":  pwdEncripted}}]}}};    
                                 R.logger.trace('query user',queryObj);
@@ -43,54 +44,17 @@ function authenticate(request, response){
                                                 let resx=result.responses[0].hits.hits[0];
                                                 response.setHeader("x-projectid", projectId);
                                                 response.setHeader("x-access-token", R.jwtController.sign(resx, phrase).token);
-                                                restApiUtil.sendResponse(response,R.constants.HTTP_OK,'', body, thisService);
+                                                restApiUtil.sendResponse(response,R.constants.HTTP_OK,'', body, thisService,startTime);
                                         }else{
-                                                restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'User/Password not found', body,thisService);
+                                                restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'User/Password not found', body,thisService,startTime);
                                         }
                                 }, error=>{
                                         R.logger.error(`Error authenticate user: ${request.body.email}->`,error);
-                                        restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService);
+                                        restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService,startTime);
                                         })
-                                },(error)=>restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'ProjectId not found', body,thisService));
-                },({httpcode,error}=errorValidate)=> restApiUtil.sendResponse(response,httpcode, error , body ,thisService)
+                                },(error)=>restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'ProjectId not found', body,thisService,startTime));
+                },({httpcode,error}=errorValidate)=> restApiUtil.sendResponse(response,httpcode, error , body ,thisService,startTime)
             );
-
-/*
-        jsonvalidator.validateVsSchema("authenticate_schema",body).then(resultValidateSchema=>{
-                let {projectId, email, pwd}=body;
-                let pwdEncripted;
-                restApiUtil.getPhrase(projectId).then(phrase=>{
-                        try {
-                           console.trace('*******************************************phrase', phrase);
-                           pwdEncripted=R.jwtController.encrypt(R.jwtController.decrypt(pwd,projectId),phrase);
-                        } catch (error) {
-                                restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, '', body,thisService);
-                        }
-                        let queryObj={"query": {"bool": {"must": [{"match": {"_id": email}},{ "match": { "pwd":  pwdEncripted}}]}}};    
-                        R.logger.trace('query user',queryObj);
-                        elasticController.find(`${projectId}.${R.constants.INDEX_USER}`,queryObj).then(result=>{
-                                R.logger.debug('Usuario-->',result.responses[0].hits);
-                                if(result.responses[0].hits.total > 0){
-                                        R.logger.debug(`Se autentico el usuario ${email} correctamente!!!`);
-                                        let resx=result.responses[0].hits.hits[0];
-                                        response.setHeader("x-projectid", projectId);
-                                        response.setHeader("x-access-token", R.jwtController.sign(resx, phrase).token);
-                                        restApiUtil.sendResponse(response,R.constants.HTTP_OK,'', body, thisService);
-                                }else{
-                                        request.body.pwd='************';
-                                        R.logger.error('No existe el usuario/password indicado:',body);
-                                        restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, '', body,thisService);
-                                }
-                        }, error=>{
-                                R.logger.error(`No se authentico el usuario: ${request.body.email}->`,error);
-                                restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, error, body,thisService);
-                                })
-                        });
-        },errors=> {
-                R.logger.error('No paso la validación de esquema', url);
-                restApiUtil.sendResponse(response,R.constants.HTTP_BAD_REQUEST,errors,body,thisService);     
-                });
-  */              
 };
     
 

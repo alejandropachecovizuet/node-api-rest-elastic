@@ -6,7 +6,7 @@ let token='';
 let tokenExpired='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ0ZXN0Iiwicm9sZXMiOlt7InJvbCI6InRlc3QifV0sImlhdCI6MTUyODgyMjQ4OCwiZXhwIjoxNTI4ODIyODQ4fQ.oBdAZyrUdbMYEhErycpjIPWzlIBjVf6S8g9m7_6TVD0'; 
 let user='x@x.com';
 let randomId= Math.random()+'';
-let projectId='unit-test1';
+let projectId='unit-test11';
 let pwd=jwt.encrypt('123456',projectId);
 process.env.NODE_ENV = 'test';
 protocol='http';
@@ -19,7 +19,7 @@ describe('Unit test api-rest - general service', function() {
 
 
 step('init-project', function(done) {
-    let url=`${protocol}://localhost:19999/admin/_init/${projectId}`;
+    let url=`${protocol}://localhost:19999/project/${projectId}/_init`;
        let formString={
         projectDescription:"Proyecto de prueba",	
         user:{
@@ -73,7 +73,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token
             ,'x-projectid':projectId
-            ,'ux':user} } , function(error, response, body) {        
+            ,'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
 
             expect(response.statusCode).to.equal(200);
@@ -87,7 +87,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token
             ,'x-projectid':projectId
-            ,'ux':user} } , function(error, response, body) {        
+            ,'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
 
             expect(response.statusCode).to.equal(200);
@@ -100,11 +100,36 @@ step('init-project', function(done) {
         let urlStr=`${protocol}://localhost:20000/test/${randomId}`
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
-            'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {        
+            'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
 
-            expect(response.statusCode).to.equal(200);
+            expect(response.statusCode).to.equal(401);
+            done();
+        });
+    });
+
+    step('add-header-token-missing', function(done) {
+        //console.log(`Add registry: ${randomId}`);
+        let urlStr=`${protocol}://localhost:20000/test/${randomId}`
+        request.put({url:urlStr,  form: {"description":"Test"},headers: {
+            'x-projectid':projectId,
+            'x-user':user} } , function(error, response, body) {        
+            console.info("\t\tResponse: ",response.body);
+
+            expect(response.statusCode).to.equal(401);
+            done();
+        });
+    });
+
+    step('add-header-user-missing', function(done) {
+        //console.log(`Add registry: ${randomId}`);
+        let urlStr=`${protocol}://localhost:20000/test/${randomId}`
+        request.put({url:urlStr,  form: {"description":"Test"},headers: {
+            'x-access-token': token,
+            'x-projectid':projectId} } , function(error, response, body) {        
+            console.info("\t\tResponse: ",response.body);
+
+            expect(response.statusCode).to.equal(401);
             done();
         });
     });
@@ -115,7 +140,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':`${user}xx`} } , function(error, response, body) {
+            'x-user':`${user}xx`} } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(401);
             done();
@@ -127,7 +152,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': `${token}x`,
             'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {
+            'x-user':user} } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(401);
             done();
@@ -138,7 +163,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': tokenExpired,
             'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {
+            'x-user':user} } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(401);
             done();
@@ -150,7 +175,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {
+            'x-user':user} } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(401);
             done();
@@ -164,7 +189,7 @@ step('init-project', function(done) {
         request({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}}, function(error, response, body) {
+            'x-user':user}}, function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -177,7 +202,7 @@ step('init-project', function(done) {
         request({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}}, function(error, response, body) {
+            'x-user':user}}, function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -189,7 +214,7 @@ step('init-project', function(done) {
         request({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}}, function(error, response, body) {
+            'x-user':user}}, function(error, response, body) {
             console.info("\t\tResponse: ",body.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -203,7 +228,7 @@ step('init-project', function(done) {
         request.post({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}}, function(error, response, body) {
+            'x-user':user}}, function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -216,7 +241,7 @@ step('init-project', function(done) {
         request.post({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}}, function(error, response, body) {
+            'x-user':user}}, function(error, response, body) {
             //console.info("\t\tResponse: ",body.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -229,7 +254,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {        
+            'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
 
             expect(response.statusCode).to.equal(404);
@@ -243,7 +268,7 @@ step('init-project', function(done) {
         request.del({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(404);
             done();
@@ -257,7 +282,7 @@ step('init-project', function(done) {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {        
+            'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
 
             expect(response.statusCode).to.equal(200);
@@ -272,12 +297,27 @@ step('init-project', function(done) {
             request.del({url:urlStr,headers: {
                 'x-access-token': token,
                 'x-projectid':projectId,
-                'ux':user}} , function(error, response, body) {
+                'x-user':user}} , function(error, response, body) {
                 console.info("\t\tResponse: ",response.body);
                 expect(response.statusCode).to.equal(200);
                 done();
             });
         }, 1000);
+    });
+
+    step('add-duplicated', function(done) {
+        let urlStr=`${protocol}://localhost:20000/test/1`
+        setTimeout(()=> {
+        request.put({url:urlStr,  form: {"description":"Test"},headers: {
+            'x-access-token': token,
+            'x-projectid':projectId,
+            'x-user':user} } , function(error, response, body) {        
+            console.info("\t\tResponse: ",response.body);
+
+            expect(response.statusCode).to.equal(409);
+            done();
+        })
+       },1000);
     });
 
     step('delete', function(done) {
@@ -287,7 +327,7 @@ step('init-project', function(done) {
             request.del({url:urlStr,headers: {
                 'x-access-token': token,
                 'x-projectid':projectId,
-                'ux':user}} , function(error, response, body) {
+                'x-user':user}} , function(error, response, body) {
                 console.info("\t\tResponse: ",response.body);
                 expect(response.statusCode).to.equal(200);
                 done();
@@ -299,7 +339,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/changes`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -310,7 +350,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/ping`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -321,7 +361,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/fail`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -332,7 +372,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/ping`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(409);
             done();
@@ -343,7 +383,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/fix`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -354,7 +394,7 @@ step('init-project', function(done) {
         request({url:`${protocol}://localhost:20000/ping`,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
-            'ux':user}} , function(error, response, body) {
+            'x-user':user}} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             done();
@@ -369,21 +409,8 @@ step('init-project', function(done) {
         });
     });
 
-    step('add-duplicated', function(done) {
-        let urlStr=`${protocol}://localhost:20000/test/1`
-        request.put({url:urlStr,  form: {"description":"Test"},headers: {
-            'x-access-token': token,
-            'x-projectid':projectId,
-            'ux':user} } , function(error, response, body) {        
-            console.info("\t\tResponse: ",response.body);
-
-            expect(response.statusCode).to.equal(409);
-            done();
-        });
-    });
-
     step('init-project-duplicated', function(done) {
-        let url=`${protocol}://localhost:19999/admin/_init/${projectId}`;
+        let url=`${protocol}://localhost:19999/project/${projectId}/_init`;
            let formString={
             projectDescription:"Proyecto de prueba",	
             user:{
@@ -392,27 +419,58 @@ step('init-project', function(done) {
              }
             };
         console.debug(url, formString);
-    
+        setTimeout(()=> {
         request.post({url,  body: formString, json:true} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(409);
             done();
             });
-        });
+        })
+    },1000);
 
         step('delete-project', function(done) {
             //console.log(`Del registry: ${randomId}`);
-            let urlStr=`${protocol}://localhost:19999/admin/project/${projectId}`
+            let urlStr=`${protocol}://localhost:19999/project/${projectId}`
             setTimeout(()=> {
                 request.del({url:urlStr,headers: {
                     'x-access-token': token,
                     'x-projectid':projectId,
-                    'ux':user}} , function(error, response, body) {
+                    'x-user':user}} , function(error, response, body) {
                     console.info("\t\tResponse: ",response.body);
                     expect(response.statusCode).to.equal(200);
                     done();
                 });
             }, 0);
         });
-    
+
+step('delete-user', function(done) {
+    //console.log(`Del registry: ${randomId}`);
+    let urlStr=`${protocol}://localhost:20000/users/${user}`
+    setTimeout(()=> {
+        request.del({url:urlStr,headers: {
+            'x-access-token': token,
+            'x-projectid':projectId,
+            'x-user':user}} , function(error, response, body) {
+            console.info("\t\tResponse: ",response.body);
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
+    }, 1000);
+});
+
+step('delete-rol', function(done) {
+    //console.log(`Del registry: ${randomId}`);
+    let urlStr=`${protocol}://localhost:20000/roles/admin`
+    setTimeout(()=> {
+        request.del({url:urlStr,headers: {
+            'x-access-token': token,
+            'x-projectid':projectId,
+            'x-user':user}} , function(error, response, body) {
+            console.info("\t\tResponse: ",response.body);
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
+    }, 1000);
+});
+
 });

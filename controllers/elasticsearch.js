@@ -44,7 +44,6 @@ exports.findById = (index,id) => {
     let queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
     let aux=index.split(".")[1];
     let typex=aux===undefined?index:aux;
-    console.trace('***********************************',id,index,typex);
     return find(index,queryObj,typex);
 };
 
@@ -52,7 +51,6 @@ exports.deleteById = (index, type, id) => {
     let promise = new Promise((resolve, reject)=> {
         let aux=index.split(".")[1];
         let typex=aux===undefined?index:aux; 
-        console.trace('***********************************DELETE',id,index,typex);
         R.elasticClient.delete({index,type:typex,id})
         .then(response=> {
            resolve();
