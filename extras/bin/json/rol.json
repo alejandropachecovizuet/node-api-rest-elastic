@@ -1,20 +1,16 @@
 {"role": "SuperAdmin",
- "restrictions":[{"restriction":"app.db.app_user.add"},
-                {"restriction":"app.db.app_user.delete"},
-                {"restriction":"app.db.app_user.update"},
-                {"restriction":"app.db.app_user.search"},
-				{"restriction":"app.db.app_rol.add"},
-                {"restriction":"app.db.app_rol.delete"},
-                {"restriction":"app.db.app_rol.update"},
-                {"restriction":"app.db.app_rol.search"},
-				{"restriction":"app.db.app_proveedor.add"},
-                {"restriction":"app.db.app_proveedor.delete"},
-                {"restriction":"app.db.app_proveedor.update"},
-                {"restriction":"app.db.app_proveedor.search"},
-				{"restriction":"app.db.app_city.add"},
-				{"restriction":"app.db.app_city.delete"},
-				{"restriction":"app.db.app_city.update"},
-				{"restriction":"app.db.app_city.search"}
+ "restrictions":[{"restriction":"app.db.users.add"},
+                {"restriction":"app.db.users.delete"},
+                {"restriction":"app.db.users.update"},
+                {"restriction":"app.db.users.search"},
+				{"restriction":"app.db.roles.add"},
+                {"restriction":"app.db.roles.delete"},
+                {"restriction":"app.db.roles.update"},
+                {"restriction":"app.db.roles.search"},
+				{"restriction":"app.db.cities.add"},
+				{"restriction":"app.db.cities.delete"},
+				{"restriction":"app.db.cities.update"},
+				{"restriction":"app.db.cities.search"}
 		       ]
 	,"created":"currentDate"
 	,"user_created":"init"

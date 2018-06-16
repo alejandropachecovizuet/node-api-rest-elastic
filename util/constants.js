@@ -29,4 +29,6 @@ define("ERROR_DUPLICATED_KEY", 'Registro duplicado');
 define("ERROR_NOT_FOUND", 'No existe el registro');
 
 /**** Indexes *****/
-define("INDEX_ROL", "app_rol"); 
+define("INDEX_ROL", "roles"); 
+define("INDEX_PROJECT", "projects"); 
+define("INDEX_USER", "users"); 

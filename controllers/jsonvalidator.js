@@ -6,22 +6,39 @@ let R = require("../util/rest-api-requires");
 /*http://jsonschema.net/#/ - ayuda a generar los esquemas*/
 
 const schemasEquivalent={
-    "app_test":"app_catalog",
-    "app_city":"app_catalog",
-    "app_estate":"app_catalog"
+    "test":"catalog_schema",
+    "cities":"catalog_schema",
+    "estates":"catalog_schema",
 }
 const schemas={
-    "authenticate_schema":{
+  "admin_init_schema":{
+    "description": "Schema for init application",
+    "properties": {
+      "user": {
+        "properties": {
+          "email": {"type": "string"},
+          "pwd":  {"type": "string"},
+        },
+        "additionalProperties": false,
+        "required": ["email","pwd" ],         
+      }
+      ,"projectDescription":  {"type": "string"},
+    },
+    "additionalProperties": false,
+    "required": ["user","projectDescription"],         
+  }
+  ,"authenticate_schema":{
       "description": "Schema for login authentication",
       "properties": {
-        "username": { "type": "string"},
+        "projectId": { "type": "string"},
+        "email": { "type": "string"},
         "pwd": { "type": "string"},
 
       },
        "additionalProperties": false,
-       "required": [ "username","pwd" ],
+       "required": [ "projectId","email","pwd" ],
     }
-    ,"app_catalog":{
+    ,"catalog_schema":{
       "description": "Schema for all catalogs",
       "properties": {
         "description": { "type": "string"},
@@ -30,7 +47,7 @@ const schemas={
        "additionalProperties": false,
        "required": [ "description" ],
     }
-    ,"app_rol":{
+    ,"roles":{
       "description": "Schema for Security Roles"
       ,"properties": {
         "role": {"type": "string"}            
@@ -48,7 +65,7 @@ const schemas={
       }
       ,"required": ["role","restrictions"]
     }
-    ,"app_user":{
+    ,"users":{
       "description": "Schema for user index ",
       "properties": {
 //        "username": { "type": "string"}
@@ -82,7 +99,7 @@ const schemas={
                           }
             }
            ,"additionalProperties": false
-           ,"required": [ "name","firstName","lastName","gender","age","birthday","email"]
+           ,"required": [ "name","firstName","lastName"]
          }
         ,"socialAccounts":{"type": "array",
              "items":{
@@ -111,32 +128,24 @@ const schemas={
           ,"user_updated": { "type": "string"}
         }
        ,"additionalProperties": false
-       ,"required": [ "pwd","status","roles","attributes","socialAccounts"]
+       ,"required": [ "pwd","status","roles"]
     }
 };
 
-exports.validateVsSchema = (schemaName, data) =>{
-    let promesa= new Promise((resolve, reject) => {
+exports.validateVsSchema = (schemaName, data) => new Promise((resolve, reject) => {
         const schemaEquivalent = schemasEquivalent[schemaName];
         const schema = schemaEquivalent?schemas[schemaEquivalent]:schemas[schemaName];
         if(!schema){
-            reject();
-        }
-        let ajv = new Ajv({allErrors: true});
-        let validate = ajv.compile(schema);
-        let valid = validate(data);
-        if (valid){
-            R.logger.debug('El json es valido!!');
-            resolve(data);
-        } else{
-            R.logger.error('El JSON NO es valido:',validate.errors);
-            reject(validate.errors);
-        }
+            reject('Schema not found!!!');
+        }else {
+          let validate = new Ajv({allErrors: true}).compile(schema);
+          if (validate(data)){
+              resolve(data);
+          } else{
+              reject(validate.errors);
+          }
+          }
     });
-
-    return promesa;
-    
-};
 
 exports.validateVsSchemaForUpdate = (schemaName, data) =>{
     let promesa= new Promise((resolve, reject) => {

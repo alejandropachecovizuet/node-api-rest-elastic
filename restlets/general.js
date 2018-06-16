@@ -10,7 +10,7 @@ let appUtil = require('../util/appUtil');
 let app = R.express();
 let rest='general';
 let changes={}
-let indexes=['app_rol'];
+let indexes=['roles'];
 let pingResponse='pong';
 
 let router=restApiUtil.init(app);
@@ -34,11 +34,12 @@ function updateChangesControl(index){
 function find(request, response){
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
+    const projectId=headers['x-projectid'];
     
     R.logger.debug("findById Service:", index, thisService);
     
     restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.search`}).then(resultToken=>
-        elasticController.find(index,body,index).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService)
+        elasticController.find(`${projectId}.${index}`,body,index).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService)
         ,error =>{
                 R.logger.fatal(`No es posible realizar la búsqueda:`,error);
                 restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,error,body,thisService);
@@ -55,10 +56,11 @@ function findById(request, response){
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     
+    const projectId=headers['x-projectid'];
     R.logger.debug("findById Service:", index, thisService);
     
     restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.search`}).then(resultToken=>
-            elasticController.findById(index,id).then(result =>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService,)
+            elasticController.findById(`${projectId}.${index}`,id).then(result =>restApiUtil.sendResponse(response,R.constants.HTTP_OK,result.responses[0].hits,body,thisService,)
             ,error=>{
                     R.logger.fatal(`No es posible realizar la búsqueda del id[${id}]`, error);
                     restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,error,body,thisService);
@@ -76,17 +78,18 @@ function add(request, response){
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     
+    const projectId=headers['x-projectid'];
     R.logger.debug("Add Service:", index, thisService);
     
     restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
         jsonvalidator.validateVsSchema(index, body).then(()=>
-            elasticController.findById(index ,id).then(
+            elasticController.findById(`${projectId}.${index}` ,id).then(
                 resultFind=>{
                     R.logger.debug('Si pudo realizar la consulta del registro');
                     if(resultFind.responses[0].hits==undefined || resultFind.responses[0].hits.total==0){
                         body["time_created"]=appUtil.getCurrentDateForElastic();
                         body["user_created"]=request.headers.ux;
-                        elasticController.add(index,id,body).then(resultAdd => { 
+                        elasticController.add(`${projectId}.${index}`,id,body).then(resultAdd => { 
                                             updateChangesControl(index);
                                             restApiUtil.sendResponse(response,R.constants.HTTP_OK, resultAdd, request.body,thisService);
                                         }, error => {
@@ -116,11 +119,12 @@ function update(request, response){
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     
+    const projectId=headers['x-projectid'];
     R.logger.debug("Add Service:", index, thisService);
     
-    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.update`}).then(resultToken=>
         jsonvalidator.validateVsSchema(index, body).then(()=>
-            elasticController.findById(index ,id).then(
+            elasticController.findById(`${projectId}.${index}` ,id).then(
                 resultFind=>{
                     R.logger.debug('Si pudo realizar la consulta del registro');
                     if(resultFind.responses[0].hits.total==1){
@@ -129,15 +133,15 @@ function update(request, response){
                         body["user_updated"]=request.headers.ux;
                         body["time_created"]=data.time_created;
                         body["user_created"]=data.user_created;
-                        elasticController.add(index,id,body).then(resultAdd => { 
+                        elasticController.add(`${projectId}.${index}`,id,body).then(resultAdd => { 
                                             updateChangesControl(index);
                                             restApiUtil.sendResponse(response, R.constants.HTTP_OK, resultAdd, request.body,thisService);
                                         }, error => {
                                             restApiUtil.sendResponse(response, R.constants.HTTP_INTERNAL, error, request.body,thisService);
                                         }); 
                     }else{
-                        R.logger.error('Duplicated key', url);
-                        restApiUtil.sendResponse(response, R.constants.HTTP_DUPLICATED, R.constants.ERROR_DUPLICATED_KEY, body,thisService,);
+                        R.logger.error('No encontro el registro', url);
+                        restApiUtil.sendResponse(response, R.constants.HTTP_NOT_FOUND, R.constants.ERROR_NOT_FOUND, body,thisService,);
                     }
             }, error=>{
                     R.logger.fatal('No es posible realizar la búsqueda', url, error,);
@@ -158,22 +162,23 @@ function update(request, response){
 function deleteById(request, response){
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
+    const projectId=headers['x-projectid'];
     
-    R.logger.debug("deleteById Service:", index, thisService);
+    R.logger.debug("deleteById Service:", index, thisService, `${projectId}.${index}`, `${projectId}.${index}`.split(".")[1] ,id);
     
-    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.add`}).then(resultToken=>
-            elasticController.findById(index ,id).then(
+    restApiUtil.validateTokenAndPermission({headers, restriction:`app.db.${request.params.index}.delete`}).then(resultToken=>
+            elasticController.findById(`${projectId}.${index}`,id).then(
                 resultFind=>{
                     R.logger.debug('Si pudo realizar la consulta del registro');
                     if(resultFind.responses[0].hits.total==1){
-                        elasticController.deleteById(index,index,id).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService)
+                        elasticController.deleteById(`${projectId}.${index}`,index,id).then(result=>restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService)
                           ,errordelete=>{
-                                R.logger.error('No fue posible eliminar el objeto['+index+']['+id+']:' + errordelete);
+                                R.logger.error('No fue posible borrar el registro['+index+']['+id+']:',errordelete);
                                 restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL,errordelete,body,thisService);
                       });
                      }else{
                      R.logger.error(R.constants.ERROR_NOT_FOUND+':['+index+']['+id+']');
-                     restApiUtil.sendResponse(response,R.constants.HTTP_NOT_FOUND,`No fue posible eliminar el objeto[${index}][${id}]`,body,thisService);
+                     restApiUtil.sendResponse(response,R.constants.HTTP_NOT_FOUND,`No se encontro el documento[${index}][${id}]`,body,thisService);
                      }
             }, error=>{
                     R.logger.fatal('No es posible realizar la búsqueda', url, error,);

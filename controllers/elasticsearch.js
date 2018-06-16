@@ -21,12 +21,14 @@ exports.initMapping = (index, type, mapping) => R.elasticClient.indices.putMappi
         type,
         body: mapping});
 
-exports.add = (index, uuid,body) => R.elasticClient.index({
+exports.add = (index, uuid,body) => {
+    let aux=index.split(".")[1];
+    return R.elasticClient.index({
         index,
-        type:index,
+        type:aux?aux:index,
         id:uuid,
         body
-    });
+    })};
 
 let find = (index, queryObj,type) => R.elasticClient.msearch({
     index,
@@ -40,12 +42,18 @@ exports.find=find;
 
 exports.findById = (index,id) => {
     let queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
-    return find(index,queryObj,index);
+    let aux=index.split(".")[1];
+    let typex=aux===undefined?index:aux;
+    console.trace('***********************************',id,index,typex);
+    return find(index,queryObj,typex);
 };
 
 exports.deleteById = (index, type, id) => {
     let promise = new Promise((resolve, reject)=> {
-        R.elasticClient.delete({index,type,id})
+        let aux=index.split(".")[1];
+        let typex=aux===undefined?index:aux; 
+        console.trace('***********************************DELETE',id,index,typex);
+        R.elasticClient.delete({index,type:typex,id})
         .then(response=> {
            resolve();
         },error =>{
