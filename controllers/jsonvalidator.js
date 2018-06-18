@@ -1,6 +1,5 @@
 'use strict';
 let Ajv = require('ajv');
-let R = require("../util/rest-api-requires");
 
 /*Schema definitions*/
 /*http://jsonschema.net/#/ - ayuda a generar los esquemas*/
@@ -146,7 +145,7 @@ exports.validateVsSchema = (schemaName, data) => new Promise((resolve, reject) =
           }
           }
     });
-
+/*
 exports.validateVsSchemaForUpdate = (schemaName, data) =>{
     let promesa= new Promise((resolve, reject) => {
         const schemaEquivalent = schemasEquivalent[schemaName];
@@ -172,5 +171,5 @@ exports.validateVsSchemaForUpdate = (schemaName, data) =>{
     return promesa;
     
 };
-
+*/
 

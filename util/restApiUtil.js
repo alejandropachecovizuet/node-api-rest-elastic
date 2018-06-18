@@ -1,7 +1,7 @@
 'use strict';
 let R = require("./rest-api-requires");
 let fs = require('fs');
-let elasticController = require("../controllers/elasticsearch");
+let database = require("../controllers/database");
 let jsonvalidator= require('../controllers/jsonvalidator');
 let timeout = require('connect-timeout');
 let allRoles;
@@ -14,8 +14,8 @@ function validatePermision(user,restrictionUser,userRoles,allRolesx){
     let promise = new Promise((resolve, reject)=>{
         if(allRolesx!=null){
             for(let i=0; i<allRolesx.length; i++){
-                let rolDB=allRolesx[i]._source.role;
-                let restrictions=allRolesx[i]._source.restrictions;
+                let rolDB=allRolesx[i].role;
+                let restrictions=allRolesx[i].restrictions;
                 //R.logger.debug('i['+i+']:', rolDB  ,restrictions);
                 for(let j=0; j<userRoles.length; j++){
                     let userRol=userRoles[j].rol;
@@ -49,8 +49,8 @@ function validatePermision(user,restrictionUser,userRoles,allRolesx){
   return new Promise((resolve, reject) => {
     if(allRoles == null){
         R.logger.debug('Find roles in DB',projectId,R.constants.INDEX_ROL);
-        elasticController.find(`${projectId}.${R.constants.INDEX_ROL}`,{}).then(result=>{
-                allRoles=result.responses[0].hits.hits;
+        database.find(projectId, R.constants.INDEX_ROL,{}).then(result=>{
+                allRoles=result.records;
                 R.logger.debug('Roles found:' +allRoles.length);
                 validatePermision(user,restriction,userRoles,allRoles).
                     then( resultValidate=>{
@@ -105,9 +105,9 @@ function haltOnTimedout(req, res, next){
 
 function startService(service,app,router, port){
     app.use(router);
+    let protocol=R.properties.get('app.protocol');
 
-
-    if(R.properties.get('app.protocol')=='https'){
+    if(protocol=='https'){
         let https = require('https');
         let privateKey  = fs.readFileSync('.certs/key.pem', 'utf8');
         let certificate = fs.readFileSync('.certs/cert.pem', 'utf8');
@@ -115,18 +115,13 @@ function startService(service,app,router, port){
 
         let httpsServer = https.createServer(credentials, app);
         httpsServer.listen(port, function() {  
-        R.logger.info('['+service+'](HTTPS)Node server running on ' + port + ', proceso: ' + process.pid );
-        R.logger.info(process.getuid());
-        R.logger.info(process.getgid());
-        R.logger.info(process.id);
-            
-            
+           R.logger.info(`[${service}](${protocol})Node server running on ${port}, process: ${process.pid},user:${process.getuid()},database:${R.properties.get('app.database.use')}`);
         });
     }else{
         let http = require('http');
         let httpServer = http.createServer(app);
         httpServer.listen(port, function() {  
-        R.logger.info(`[${service}](HTTP)Node server running on : ${port} , proceso: ${process.pid}`);
+            R.logger.info(`[${service}](${protocol})Node server running on ${port}, process: ${process.pid},user:${process.getuid()},database:${R.properties.get('app.database.use')}`);
         });
     }
 }
@@ -169,16 +164,17 @@ let getPhrase=(projectId)=>{
     let promise = new Promise((resolve, reject)=>{
         let phrase=mapPhrases.get(projectId);
         if(phrase){
-            R.logger.info('Obtein phrases in memory', phrase);
+            R.logger.info('Obteing phrases in memory', phrase);
             resolve(phrase);
         }else{
             R.logger.info('Obtein phrases in DB!!!',projectId)
-            elasticController.findById(R.constants.INDEX_PROJECT,projectId).then(result => {
-                if(result.responses[0].hits.total > 0){
-                    phrase=result.responses[0].hits.hits[0]._source.phrase
+            database.findById('general', R.constants.INDEX_PROJECT,projectId).then(result => {
+                R.logger.info('PPPPPPPPPPPPPPPPPPPPPPPPPP', result);
+                if(result.total > 0){
+                    phrase=result.records[0].phrase
                     mapPhrases.set(projectId,phrase)
                 }
-                R.logger.debug('phrase-->', result.responses[0].hits.total, phrase);
+                R.logger.debug('phrase-->', result);
                 if(!phrase){
                     reject('project not exists:'+projectId);
                 }

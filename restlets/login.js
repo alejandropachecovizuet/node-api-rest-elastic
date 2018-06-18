@@ -5,7 +5,7 @@
 let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let jsonvalidator = require('../controllers/jsonvalidator');
-let elasticController = require("../controllers/elasticsearch");
+let database = require("../controllers/database");
 let util = require('util');
 let app = R.express();
 let rest='login',name='';
@@ -35,15 +35,23 @@ function authenticate(request, response){
                                 } catch (error) {
                                         restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'Password incorrect', body,thisService,startTime);
                                 }
-                                let queryObj={"query": {"bool": {"must": [{"match": {"_id": email}},{ "match": { "pwd":  pwdEncripted}}]}}};    
-                                R.logger.trace('query user',queryObj);
-                                elasticController.find(`${projectId}.${R.constants.INDEX_USER}`,queryObj).then(result=>{
-                                        R.logger.debug('User-->',result.responses[0].hits);
-                                        if(result.responses[0].hits.total > 0){
+                                let databaseProp = R.properties.get('app.database.use');
+                                let queryObj;    
+                                if(databaseProp==='elastic'){
+                                        queryObj={"query": {"bool": {"must": [{"match": {"_id": email}},{ "match": { "pwd":  pwdEncripted}}]}}};
+                                }else if(databaseProp==='mongo'){
+                                        queryObj={"_id": email, 'pwd':pwdEncripted};
+                                }
+                                                        
+                                R.logger.info('query user',queryObj);
+                                database.find(projectId, R.constants.INDEX_USER,queryObj).then(result=>{
+                                        R.logger.debug('User-->',result,email, pwdEncripted);
+                                        if(result.total > 0){
                                                 R.logger.debug(`User authenticated ${email}!!!`);
-                                                let resx=result.responses[0].hits.hits[0];
+                                                let resx=result.records[0];
+                                                R.logger.info('RESSSSSULT->',resx);
                                                 response.setHeader("x-projectid", projectId);
-                                                response.setHeader("x-access-token", R.jwtController.sign(resx, phrase).token);
+                                                response.setHeader("x-access-token", R.jwtController.sign(email,resx, phrase).token);
                                                 restApiUtil.sendResponse(response,R.constants.HTTP_OK,'', body, thisService,startTime);
                                         }else{
                                                 restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'User/Password not found', body,thisService,startTime);

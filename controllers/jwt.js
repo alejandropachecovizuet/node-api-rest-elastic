@@ -1,8 +1,8 @@
 'use strict';
 let R = require("../util/rest-api-requires");
-exports.sign=( user, phrase) => {
-        let message={_id:user._id,roles:user._source.roles, projectId:user._source.projectId};
-        //R.logger.trace(message);
+exports.sign=(email, user, phrase) => {
+        let message={_id:email,roles:user.roles, projectId:user.projectId};
+        R.logger.trace('****message:',message);
         let token = R.jwt.sign(message,  phrase, {
             expiresIn:  R.properties.get('app.token.expire') 
     });
@@ -15,7 +15,7 @@ exports.verify= (token,tokenusername,phrase, projectId) =>{
                 let decodeToken=R.jwt.verify(token, phrase);
                 R.logger.debug(decodeToken);
                 if(tokenusername!=decodeToken._id){
-                    reject(`No corresponde el usuario ${tokenusername} con el Token`);
+                    reject(`No corresponde el usuario ${tokenusername} con el Token->`,decodeToken);
                 }
                 if(projectId!=decodeToken.projectId){
                     reject(`El project ID del usuario ${tokenusername} con corresponde al projectId enviado`);
