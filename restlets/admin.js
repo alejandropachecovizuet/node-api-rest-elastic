@@ -6,8 +6,9 @@ let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let appUtil = require('../util/appUtil');
 let jsonvalidator = require('../controllers/jsonvalidator');
-let elasticController = require("../controllers/elasticsearch");
+let database = require("../controllers/database");
 let util = require('util');
+const GENERAL_PROJECT='general';
 
 let app = R.express();
 let rest='admin',name='';
@@ -33,10 +34,10 @@ function initProject(request, response){
         R.logger.debug(thisService);
     
         restApiUtil.validateAll(['schema'],request,{schema:'admin_init_schema'}).then(
-                ()=>elasticController.findById(R.constants.INDEX_PROJECT ,projectId).then(
+                ()=>database.findById(GENERAL_PROJECT,R.constants.INDEX_PROJECT ,projectId).then(
                         result=>{
-                            R.logger.debug('Record found!!!');
-                            if(result.responses[0].hits==undefined || result.responses[0].hits.total==0){
+                            R.logger.debug('Record found!!!',result);
+                            if(result.total==0){
                                 let bodyProject={
                                         description,
                                         plan:'initial',
@@ -44,7 +45,7 @@ function initProject(request, response){
                                         time_created:appUtil.getCurrentDateForElastic(),
                                         user_created:email,                        
                                 };
-                                elasticController.add(R.constants.INDEX_PROJECT,projectId ,bodyProject).then(
+                                database.add(GENERAL_PROJECT,R.constants.INDEX_PROJECT,projectId ,bodyProject).then(
                                         () => { 
                                         R.logger.info(`project ${projectId} added `);
                                         let bodyRol={"role": "admin",
@@ -65,7 +66,7 @@ function initProject(request, response){
                                                 time_created:appUtil.getCurrentDateForElastic(),
                                                 user_created:email,                        
                                               };
-                                        elasticController.add(`${projectId}.${R.constants.INDEX_ROL}`,'admin' ,bodyRol).then(
+                                        database.add(projectId, R.constants.INDEX_ROL, 'admin' ,bodyRol).then(
                                                 () => { 
                                                 let userBody={
                                                         projectId,
@@ -75,7 +76,7 @@ function initProject(request, response){
                                                         time_created:appUtil.getCurrentDateForElastic(),
                                                         user_created:email,                        
                                                         };
-                                                elasticController.add(`${projectId}.${R.constants.INDEX_USER}`,email ,userBody).then(
+                                                database.add(projectId, R.constants.INDEX_USER, email ,userBody).then(
                                                         (result) => { 
                                                                 R.logger.info(`User ${email} added `);
                                                                 restApiUtil.sendResponse(response,R.constants.HTTP_OK, result, body,thisService, startTime);
@@ -83,12 +84,12 @@ function initProject(request, response){
                                                         error => { 
                                                                 R.logger.error('Error inserting user', error);
                                                                 //ROLLBACK
-                                                                deleteUser(`${projectId}.${R.constants.INDEX_USER}`,email);
+                                                                deleteUser(projectId,projectId,R.constants.INDEX_USER,email);
                                                         });     
                                         },(error)=>{
                                                 R.logger.error('Error inserting rol', error);
                                                 //ROLLBACK
-                                                deleteRol('admin');
+                                                deleteRol(projectId,'admin');
                                                 } 
                                         );//rol
                                 
@@ -110,7 +111,7 @@ function deleteProject(request, response){
         const {method, url, body, params: {projectId}}=request;
         const thisService=`[${method}]${url}`;
         R.logger.info('DELETE PROJECT!!!!!',projectId);
-        elasticController.deleteById(R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId).then(() => { 
+        database.deleteById(GENERAL_PROJECT,R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId).then(() => { 
                 R.logger.info(`Project ${projectId} deleted `);
                 restApiUtil.sendResponse(response,R.constants.HTTP_OK, '', body,thisService,startTime);
         }, error => {
@@ -118,13 +119,13 @@ function deleteProject(request, response){
         }); 
 }
 
-function deleteRol(id){
-        elasticController.deleteById(R.constants.INDEX_ROL, R.constants.INDEX_ROL ,id).then(() => { 
+function deleteRol(projectId,id){
+        database.deleteById(projectId,R.constants.INDEX_ROL, R.constants.INDEX_ROL ,id).then(() => { 
                 R.logger.info(`Rol ${id} deleted `);
         }, error => R.logger.error('Error, dont delete rol:',id))}; 
 
-function deleteUser(index,id){
-        elasticController.deleteById(index, index ,id).then(() => { 
+function deleteUser(projectId,index,id){
+        database.deleteById(projectId,index, index ,id).then(() => { 
                 R.logger.info(`User ${id} deleted `);
         }, error => R.logger.error('Error, dont delete user:',id))}; 
         

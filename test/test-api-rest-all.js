@@ -6,7 +6,7 @@ let token='';
 let tokenExpired='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ0ZXN0Iiwicm9sZXMiOlt7InJvbCI6InRlc3QifV0sImlhdCI6MTUyODgyMjQ4OCwiZXhwIjoxNTI4ODIyODQ4fQ.oBdAZyrUdbMYEhErycpjIPWzlIBjVf6S8g9m7_6TVD0'; 
 let user='x@x.com';
 let randomId= Math.random()+'';
-let projectId='unit-test11';
+let projectId='unit-test';
 let pwd=jwt.encrypt('123456',projectId);
 process.env.NODE_ENV = 'test';
 protocol='http';
@@ -61,7 +61,7 @@ step('init-project', function(done) {
             token=response.headers['x-access-token'];
             expect(response.statusCode).to.equal(200);
             done();
-            })}, 1300);
+            })}, 1000);
         });
         
 /**
@@ -70,6 +70,7 @@ step('init-project', function(done) {
     step('add-1', function(done) {
         //console.log(`Add registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/1`
+        console.log('TOKENNNNN>',token);
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token
             ,'x-projectid':projectId
@@ -287,7 +288,7 @@ step('init-project', function(done) {
 
             expect(response.statusCode).to.equal(200);
             done();
-        })},1000);
+        })},900);
     });
 
     step('delete', function(done) {
@@ -302,7 +303,7 @@ step('init-project', function(done) {
                 expect(response.statusCode).to.equal(200);
                 done();
             });
-        }, 1000);
+        }, 500);
     });
 
     step('add-duplicated', function(done) {
@@ -317,7 +318,7 @@ step('init-project', function(done) {
             expect(response.statusCode).to.equal(409);
             done();
         })
-       },1000);
+       },500);
     });
 
     step('delete', function(done) {

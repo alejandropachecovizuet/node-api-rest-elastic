@@ -20,13 +20,3 @@ define("bodyParser", require('body-parser'));
 define("methodOverride", require('method-override'));
 let session = require('express-session');
 define("session", require('express-session'));
-
-let elasticsearch= require("elasticsearch");
-let elasticClient = new elasticsearch.Client({  
-    host: properties.get('app.elasticsearch.host'),
-    log: properties.get('app.elasticsearch.log')
-//    plugins:[deleteByQuery]
-});
-define("elasticsearch", elasticsearch);
-define("elasticClient", elasticClient);
-//define("elastic", require('../controllers/elasticsearch'));
