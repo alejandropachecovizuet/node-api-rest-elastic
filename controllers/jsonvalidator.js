@@ -145,31 +145,3 @@ exports.validateVsSchema = (schemaName, data) => new Promise((resolve, reject) =
           }
           }
     });
-/*
-exports.validateVsSchemaForUpdate = (schemaName, data) =>{
-    let promesa= new Promise((resolve, reject) => {
-        const schemaEquivalent = schemasEquivalent[schemaName];
-        const schema = schemaEquivalent?schemas[schemaEquivalent]:schemas[schemaName];
-        if(!schema){
-            reject();
-        }
-        schema.required.push('time_created');
-        schema.required.push('user_created');
-        let ajv = new Ajv({allErrors: true});
-        let validate = ajv.compile(schema);
-        let valid = validate(data);
-        if (valid){
-            R.logger.debug('El json es valido!!');
-            resolve(data);
-        } else{
-            R.logger.error('El JSON NO es valido:',validate.errors);
-            reject(validate.errors);
-        }
-    
-    });
-
-    return promesa;
-    
-};
-*/
-
