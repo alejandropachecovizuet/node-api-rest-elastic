@@ -1,3 +1,5 @@
 node_modules
 package-lock.json
 xDoc/node-api-rest-elastic.html
+.nyc_output
+coverage

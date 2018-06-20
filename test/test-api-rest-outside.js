@@ -10,13 +10,9 @@ let projectId='unit-test';
 let pwd=jwt.encrypt('123456',projectId);
 process.env.NODE_ENV = 'test';
 protocol='http';
+process.env.NODE_ENV = "test";
 
-describe('Unit test api-rest - general service', function() {
-
-/**
- * ADMIN SERVVICES
- */
-
+describe('*********************************** Unit test api-rest - general service OUTSIDE *********************************** ', function() {
 
 step('init-project', function(done) {
     let url=`${protocol}://localhost:19999/project/${projectId}/_init`;
@@ -36,10 +32,6 @@ step('init-project', function(done) {
         });
     });
     
-/**
- * LOGIN SERVVICES
- */
-
     step('authenticate-body-vacio', function(done) {
         request.post({url:`${protocol}://localhost:20001/authenticate`,  form: {} } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
@@ -47,6 +39,7 @@ step('init-project', function(done) {
             done();
             });
         });
+/*
     step('login-stats', function(done) {
         request(`${protocol}://localhost:20001/_stats` , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
@@ -64,9 +57,6 @@ step('init-project', function(done) {
             })}, 1000);
         });
         
-/**
- * GENERAL SERVICES
- */
     step('add-1', function(done) {
         //console.log(`Add registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/1`
@@ -336,16 +326,17 @@ step('init-project', function(done) {
         }, 10);
     });
 
-    step('changes', function(done) {
-        request({url:`${protocol}://localhost:20000/changes`,headers: {
-            'x-access-token': token,
-            'x-projectid':projectId,
-            'x-user':user}} , function(error, response, body) {
-            console.info("\t\tResponse: ",response.body);
-            expect(response.statusCode).to.equal(200);
-            done();
-        });
-    });
+//    step('changes', function(done) {
+//        request({url:`${protocol}://localhost:20000/changes`,headers: {
+//            'x-access-token': token,
+//            'x-projectid':projectId,
+//            'x-user':user}} , function(error, response, body) {
+//            console.info("\t\tResponse: ",response.body);
+//            expect(response.statusCode).to.equal(200);
+//            done();
+//        });
+//    });
+
 
     step('ping-ok', function(done) {
         request({url:`${protocol}://localhost:20000/ping`,headers: {
@@ -473,5 +464,5 @@ step('delete-rol', function(done) {
         });
     }, 1000);
 });
-
+*/  
 });

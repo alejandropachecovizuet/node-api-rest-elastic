@@ -7,6 +7,14 @@ let timeout = require('connect-timeout');
 let allRoles;
 let mapPhrases=new Map();
 
+exports.setHeader=(response, header, value)=>{
+   try {
+    response.setHeader(header, value);
+   } catch (error) {
+    response.headers[header]=value;
+  }
+};
+
 function validatePermision(user,restrictionUser,userRoles,allRolesx){
     let found=false;
     R.logger.debug(`validatePermision...${restrictionUser}`,userRoles);
@@ -151,11 +159,15 @@ exports.validateTokenAndPermission= ({headers, restriction})=>{
    return promise;
 }
 let sendResponse = (response, httpCode, bodyOut, bodyIn, service,startTime) => {
-    if(bodyIn.pwd){
+    if(bodyIn.pwd!=undefined){
         bodyIn.pwd="*********";
+    }
+    if(bodyIn.user!=undefined && bodyIn.user.pwd!=undefined){
+        bodyIn.user.pwd="*********";
     }
     let timeElapsed=startTime===undefined?'':`Elapsed time:${(new Date().getTime()-startTime)} milliseconds`;
     R.logger.info(`service-response: ${service}`,httpCode, bodyOut, bodyIn,timeElapsed);
+    //response.statustest=httpCode;
     response.status(httpCode).send(bodyOut);
 }
 exports.sendResponse=sendResponse;
@@ -169,7 +181,7 @@ let getPhrase=(projectId)=>{
         }else{
             R.logger.info('Obtein phrases in DB!!!',projectId)
             database.findById('general', R.constants.INDEX_PROJECT,projectId).then(result => {
-                R.logger.info('PPPPPPPPPPPPPPPPPPPPPPPPPP', result);
+                //R.logger.info('PPPPPPPPPPPPPPPPPPPPPPPPPP', result);
                 if(result.total > 0){
                     phrase=result.records[0].phrase
                     mapPhrases.set(projectId,phrase)

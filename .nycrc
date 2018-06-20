@@ -1,0 +1,23 @@
+{
+    "all": true,
+    "cache": false,
+    "exclude": [
+        "coverage",
+        "test",
+        "extras",
+        "restlets",
+        "util/restApiUtil.js"      
+    ],
+    "extensions": [
+        ".js",
+        ".ts"
+    ],
+    "report-dir": "./coverage",
+    "reporter": [
+        "cobertura",
+        "html",
+        "text",
+        "text-summary"
+    ],
+    "temp-directory": "./coverage/.nyc_output"
+}

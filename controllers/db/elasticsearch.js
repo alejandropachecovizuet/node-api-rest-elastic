@@ -19,25 +19,25 @@ let getInstance= ()=>{
 /**
 * Delete an existing index
 */
-exports.deleteIndex= index => getInstance().indices.delete({index: index});
+//exports.deleteIndex= index => getInstance().indices.delete({index: index});
 
 /**
 * create the index
 */
-exports.initIndex = index =>getInstance().indices.create({index});
+//exports.initIndex = index =>getInstance().indices.create({index});
 
 /**
 * check if the index exists
 */
-exports.indexExists = index => getInstance().indices.exists({index});
+//exports.indexExists = index => getInstance().indices.exists({index});
 
-exports.initMapping = (index, type, mapping) => getInstance().indices.putMapping({
+/*exports.initMapping = (index, type, mapping) => getInstance().indices.putMapping({
         index,
         type,
         body: mapping});
-
+*/
 let add = (projectId,index, uuid,body) => {
-    R.logger.info('ADDDD:',projectId,index, uuid,body);
+    //R.logger.info('ADDDD:',projectId,index, uuid,body);
     return getInstance().index({
         index:`${projectId}.${index}`,
         type:index,
@@ -56,7 +56,7 @@ let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> g
         {},queryObj
         ]
     }).then(result=> {
-        R.logger.info(projectId+'.'+index, 'TRAAAAAXAAA',result);
+        //R.logger.info(projectId+'.'+index, 'TRAAAAAXAAA',result);
         let total=0;
         let records = [];
         if( result.responses[0].hits!=undefined){
@@ -66,7 +66,7 @@ let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> g
                 records.push(value._source);
               });
             }
-            R.logger.info('RESULTTT:',{total, records});
+            //R.logger.info('RESULTTT:',{total, records});
             resolve({total, records})        
         }
     ,error=> reject(error)));
