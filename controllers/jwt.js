@@ -2,7 +2,6 @@
 let R = require("../util/rest-api-requires");
 exports.sign=(email, user, phrase) => {
         let message={_id:email,roles:user.roles, projectId:user.projectId};
-        R.logger.trace('****message:',message);
         let token = R.jwt.sign(message,  phrase, {
             expiresIn:  R.properties.get('app.token.expire') 
     });
@@ -32,8 +31,3 @@ exports.verify= (token,tokenusername,phrase, projectId) =>{
 exports.encrypt= (data, phrase) =>R.jwt.sign(data, phrase);
 
 exports.decrypt= (data, phrase) =>R.jwt.verify(data, phrase); 
-
-exports.guid=()=>{
-    let s4=()=>Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-      return `${s4()}${s4()}-${s4()}${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
-    };

@@ -5,7 +5,7 @@
 let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let app = R.express();
-let rest='login',name='';
+let rest='login';
 let controller = require('../controllers/loginController');
 
 

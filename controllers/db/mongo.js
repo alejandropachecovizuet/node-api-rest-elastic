@@ -53,6 +53,7 @@ exports.find=find;
 
 
 exports.deleteById = (projectId,index, type, id) => new Promise((resolve, reject)=>{
+    R.logger.info(`Deleting [${id}] from ${index} ....`, projectId,index, type, id);
     MongoClient.connect(url,(err, client)=>{
         client.db(projectId).collection(index).deleteOne({'_id': id},(err, result)=> err===null?resolve(result):reject(err));
         });

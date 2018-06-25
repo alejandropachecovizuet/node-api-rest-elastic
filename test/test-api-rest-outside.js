@@ -1,3 +1,4 @@
+let sleep = require('thread-sleep');
 let expect  = require('chai').expect;
 let request = require('request');
 let jwt = require('../controllers/jwt');
@@ -39,7 +40,6 @@ step('init-project', function(done) {
             done();
             });
         });
-/*
     step('login-stats', function(done) {
         request(`${protocol}://localhost:20001/_stats` , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
@@ -48,13 +48,13 @@ step('init-project', function(done) {
         });
     });
     step('authenticate-ok', function(done) {
-        setTimeout(()=> {
+        sleep(3000);
         request.post({url:`${protocol}://localhost:20001/authenticate`,  form: {"email":"x@x.com", pwd, projectId}, json:true } , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             token=response.headers['x-access-token'];
             expect(response.statusCode).to.equal(200);
             done();
-            })}, 1000);
+            });
         });
         
     step('add-1', function(done) {
@@ -162,7 +162,7 @@ step('init-project', function(done) {
     });
 
     step('add-collection-not-authorized', function(done) {
-        let urlStr=`${protocol}://localhost:20000/testx/${randomId}`
+        let urlStr=`${protocol}://localhost:20000/testy/${randomId}`
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
@@ -267,9 +267,9 @@ step('init-project', function(done) {
     });
 
     step('update-ok', function(done) {
+        sleep(1000);
         //console.log(`Add registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/1/_update`
-        setTimeout(()=> {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
@@ -278,13 +278,12 @@ step('init-project', function(done) {
 
             expect(response.statusCode).to.equal(200);
             done();
-        })},900);
+        });
     });
 
     step('delete', function(done) {
         //console.log(`Del registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/${randomId}`
-        setTimeout(()=> {
             request.del({url:urlStr,headers: {
                 'x-access-token': token,
                 'x-projectid':projectId,
@@ -293,12 +292,10 @@ step('init-project', function(done) {
                 expect(response.statusCode).to.equal(200);
                 done();
             });
-        }, 500);
     });
 
     step('add-duplicated', function(done) {
         let urlStr=`${protocol}://localhost:20000/test/1`
-        setTimeout(()=> {
         request.put({url:urlStr,  form: {"description":"Test"},headers: {
             'x-access-token': token,
             'x-projectid':projectId,
@@ -308,13 +305,11 @@ step('init-project', function(done) {
             expect(response.statusCode).to.equal(409);
             done();
         })
-       },500);
     });
 
     step('delete', function(done) {
         //console.log(`Del registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/1`
-        setTimeout(()=> {
             request.del({url:urlStr,headers: {
                 'x-access-token': token,
                 'x-projectid':projectId,
@@ -323,7 +318,6 @@ step('init-project', function(done) {
                 expect(response.statusCode).to.equal(200);
                 done();
             });
-        }, 10);
     });
 
 //    step('changes', function(done) {
@@ -411,19 +405,16 @@ step('init-project', function(done) {
              }
             };
         console.debug(url, formString);
-        setTimeout(()=> {
         request.post({url,  body: formString, json:true} , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(409);
             done();
             });
-        })
-    },1000);
+    });
 
         step('delete-project', function(done) {
             //console.log(`Del registry: ${randomId}`);
             let urlStr=`${protocol}://localhost:19999/project/${projectId}`
-            setTimeout(()=> {
                 request.del({url:urlStr,headers: {
                     'x-access-token': token,
                     'x-projectid':projectId,
@@ -432,13 +423,11 @@ step('init-project', function(done) {
                     expect(response.statusCode).to.equal(200);
                     done();
                 });
-            }, 0);
         });
 
 step('delete-user', function(done) {
     //console.log(`Del registry: ${randomId}`);
     let urlStr=`${protocol}://localhost:20000/users/${user}`
-    setTimeout(()=> {
         request.del({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
@@ -447,13 +436,11 @@ step('delete-user', function(done) {
             expect(response.statusCode).to.equal(200);
             done();
         });
-    }, 1000);
 });
 
 step('delete-rol', function(done) {
     //console.log(`Del registry: ${randomId}`);
     let urlStr=`${protocol}://localhost:20000/roles/admin`
-    setTimeout(()=> {
         request.del({url:urlStr,headers: {
             'x-access-token': token,
             'x-projectid':projectId,
@@ -462,7 +449,5 @@ step('delete-rol', function(done) {
             expect(response.statusCode).to.equal(200);
             done();
         });
-    }, 1000);
 });
-*/  
 });

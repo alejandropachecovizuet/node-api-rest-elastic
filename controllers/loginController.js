@@ -8,12 +8,13 @@ return new Promise((resolve,reject)=>{
     const thisService=`[${method}]${url}`;
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
+    const testOptions=request.testOptions;
 
     restApiUtil.validateAll(['schema'],request,{schema:'authenticate_schema'}).then(
             ()=>{
                     R.logger.debug('validations is ok!!');
                     let {projectId, email, pwd}=body;
-                    restApiUtil.getPhrase(projectId).then(phrase=>{
+                    restApiUtil.getPhrase(projectId,testOptions).then(phrase=>{
                             let pwdEncripted;
                             try {
                                     pwdEncripted=R.jwtController.encrypt(R.jwtController.decrypt(pwd,projectId),phrase);
@@ -30,7 +31,7 @@ return new Promise((resolve,reject)=>{
                             }
                                                     
                             R.logger.info('query user',queryObj);
-                            database.find(projectId, R.constants.INDEX_USER,queryObj).then(result=>{
+                            database.find(projectId, R.constants.INDEX_USER,queryObj,testOptions).then(result=>{
                                     R.logger.debug('User-->',result,email, pwdEncripted);
                                     if(result.total > 0){
                                             R.logger.debug(`User authenticated ${email}!!!`);
@@ -51,7 +52,8 @@ return new Promise((resolve,reject)=>{
                                     reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
                                     //restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService,startTime);
                                     })
-                            },(error)=>restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'ProjectId not found', body,thisService,startTime));
+                            },(error)=>reject({response, httpCode:R.constants.HTTP_UNAUTHORIZED, bodyOut:error, bodyIn:body, service:thisService,startTime}))
+                            //restApiUtil.sendResponse(response,R.constants.HTTP_UNAUTHORIZED, 'ProjectId not found', body,thisService,startTime));
             },(error)=> reject({response, httpCode:error.httpcode, bodyOut:error.error, bodyIn:body, service:thisService,startTime})
             //restApiUtil.sendResponse(response,httpcode, error , body ,thisService,startTime)
         );

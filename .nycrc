@@ -3,9 +3,12 @@
     "cache": false,
     "exclude": [
         "coverage",
+        "controllers/db/elasticsearch.js",      
+        "controllers/db/mongo.js",      
         "test",
         "extras",
         "restlets",
+        "util/logger.js",
         "util/restApiUtil.js"      
     ],
     "extensions": [

@@ -37,7 +37,7 @@ let getInstance= ()=>{
         body: mapping});
 */
 let add = (projectId,index, uuid,body) => {
-    //R.logger.info('ADDDD:',projectId,index, uuid,body);
+    //R.logger.debug('ADD->',projectId,index, uuid,body);
     return getInstance().index({
         index:`${projectId}.${index}`,
         type:index,
@@ -73,10 +73,7 @@ let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> g
 
 exports.find=find;
 
-exports.findById = (projectId,index,id) => {
-    let queryObj={"query": {"bool": {"must": [{"match": {"_id": id}}]}}};
-    return find(projectId,index,queryObj,index);
-};
+exports.findById = (projectId,index,id) => find(projectId,index,{"query": {"bool": {"must": [{"match": {"_id": id}}]}}},index,);
 
 exports.deleteById = (projectId,index, type, id) => {
     let promise = new Promise((resolve, reject)=> {

@@ -2,6 +2,7 @@ let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let appUtil = require('../util/appUtil');
 let database = require("./database");
+const uuid = require('uuid/v1');
 let util = require('util');
 const GENERAL_PROJECT='general';
 
@@ -9,15 +10,16 @@ function initProject(request, response){
     return new Promise((resolve,reject)=>{
     const {method, url, body, params: {projectId}, headers}=request;
     const {projectDescription: description,user: {email, pwd }} = body;
-    const phrase=R.jwtController.guid();
+    const phrase=uuid();
     const thisService=`[${method}]${url}`;
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
-    restApiUtil.validateAll(['schema'],request,{schema:'admin_init_schema'}).then(
+    restApiUtil.validateAll(['schema'],request,{schema:'admin_init_schema'},testOptions).then(
             ()=>{
                 R.logger.debug('Valitaion is OK!!!!');                
-                database.findById(GENERAL_PROJECT,R.constants.INDEX_PROJECT ,projectId).then(
+                database.findById(GENERAL_PROJECT,R.constants.INDEX_PROJECT ,projectId,testOptions).then(
                     result=>{
                         R.logger.debug('Record found!!!',result);
                         if(result.total==0){0
@@ -29,7 +31,7 @@ function initProject(request, response){
                                     user_created:email,                        
                             };
                             R.logger.debug('adding project...', projectId);
-                            database.add(GENERAL_PROJECT,R.constants.INDEX_PROJECT,projectId ,bodyProject).then(
+                            database.add(GENERAL_PROJECT,R.constants.INDEX_PROJECT,projectId ,bodyProject,testOptions).then(
                                     () => { 
                                     R.logger.info(`project ${projectId} added `);
                                     let bodyRol={"role": "admin",
@@ -41,16 +43,18 @@ function initProject(request, response){
                                                                  {"restriction":"app.db.roles.delete"},
                                                                  {"restriction":"app.db.roles.update"},
                                                                  {"restriction":"app.db.roles.search"},
+                                                                 {"restriction":"app.db.files.search"},
                                                                  {"restriction":"app.db.test.add"},
                                                                  {"restriction":"app.db.test.delete"},
                                                                  {"restriction":"app.db.test.update"},
                                                                  {"restriction":"app.db.test.search"},
+                                                                 {"restriction":"app.db.testx.add"},
                                                                  {"restriction":"app.db.testx.search"},
                                                             ],
                                             time_created:appUtil.getCurrentDateForElastic(),
                                             user_created:email,                        
                                           };
-                                    database.add(projectId, R.constants.INDEX_ROL, 'admin' ,bodyRol).then(
+                                    database.add(projectId, R.constants.INDEX_ROL, 'admin' ,bodyRol,testOptions).then(
                                             () => { 
                                             let userBody={
                                                     projectId,
@@ -60,10 +64,9 @@ function initProject(request, response){
                                                     time_created:appUtil.getCurrentDateForElastic(),
                                                     user_created:email,                        
                                                     };
-                                            database.add(projectId, R.constants.INDEX_USER, email ,userBody).then(
+                                            database.add(projectId, R.constants.INDEX_USER, email ,userBody,testOptions).then(
                                                     (result) => { 
                                                             R.logger.info(`User ${email} added `);
-                                                            response.statusCode=200;
                                                             R.logger.info('Project, user and rol created succefully',response);
                                                             //restApiUtil.sendResponse(response,R.constants.HTTP_OK, result, body,thisService, startTime);
                                                             resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime});
@@ -71,13 +74,14 @@ function initProject(request, response){
                                                     error => { 
                                                             R.logger.error('Error inserting user', error);
                                                             //ROLLBACK
-                                                            deleteUser(projectId,projectId,R.constants.INDEX_USER,email);
+                                                            rollbackRol(projectId,'admin',testOptions);
+                                                            rollbackProject(projectId,testOptions);
                                                             reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
                                                     });     
                                     },(error)=>{
                                             R.logger.error('Error inserting rol', error);
                                             //ROLLBACK
-                                            deleteRol(projectId,'admin');
+                                            rollbackProject(projectId,testOptions);
                                             reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
                                         } 
                                     );//rol
@@ -113,8 +117,10 @@ function deleteProject(request, response){
     let startTime = new Date().getTime();
     const {method, url, body, params: {projectId}}=request;
     const thisService=`[${method}]${url}`;
+    const testOptions=request.testOptions;
+
     R.logger.info('DELETE PROJECT!!!!!',projectId);
-    database.deleteById(GENERAL_PROJECT,R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId).then(() => { 
+    database.deleteById(GENERAL_PROJECT,R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId,testOptions).then(() => { 
             R.logger.info(`Project ${projectId} deleted `);
             resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:'', bodyIn:body, service:thisService,startTime});
             //restApiUtil.sendResponse(response,R.constants.HTTP_OK, '', body,thisService,startTime);
@@ -126,13 +132,18 @@ function deleteProject(request, response){
 }
 exports.deleteProject=deleteProject;
 
-function deleteRol(projectId,id){
-    database.deleteById(projectId,R.constants.INDEX_ROL, R.constants.INDEX_ROL ,id).then(() => { 
-            R.logger.info(`Rol ${id} deleted `);
-    }, error => R.logger.error('Error, dont delete rol:',id))}; 
-
-function deleteUser(projectId,index,id){
-    database.deleteById(projectId,index, index ,id).then(() => { 
-            R.logger.info(`User ${id} deleted `);
-    }, error => R.logger.error('Error, dont delete user:',id))}; 
+function rollbackRol(projectId,id,testOptions){
+    R.logger.info('Rollback rol add ...')
+    setTimeout(()=> {
+     database.deleteById(projectId,R.constants.INDEX_ROL, R.constants.INDEX_ROL ,id,testOptions)
+                .then(() => R.logger.info(`Rol ${id} deleted `)
+                , error => R.logger.error('Error, dont delete rol:',id));
+    },1000)}; 
     
+function rollbackProject(projectId,testOptions){
+        R.logger.info('Rollback project add ...')
+        setTimeout(()=>{ 
+        database.deleteById('general',R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId,testOptions)
+                .then(() => R.logger.info(`Project ${projectId} deleted `)
+                ,error => R.logger.error('Error, dont delete project:',projectId))} 
+        ,1000)}; 
