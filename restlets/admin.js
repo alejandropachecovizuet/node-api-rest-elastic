@@ -5,10 +5,9 @@
 let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let controller = require('../controllers/adminController');
-const GENERAL_PROJECT='general';
 
 let app = R.express();
-let rest='admin',name='';
+let rest='admin';
 
 let router=restApiUtil.init(app);
 

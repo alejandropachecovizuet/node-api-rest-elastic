@@ -1,5 +1,6 @@
 'use strict';
 let R = require("./rest-api-requires");
+let appUtil = require('../util/appUtil');
 let fs = require('fs');
 let database = require("../controllers/database");
 let jsonvalidator= require('../controllers/jsonvalidator');
@@ -42,7 +43,7 @@ function validatePermision(user,restrictionUser,userRoles,allRolesx){
            }
         }
          if(found){
-             R.logger.info(`The User[${user}] DON'T have permissions: ${restrictionUser}`);
+             R.logger.info(`The User[${user}] have permissions: ${restrictionUser}`);
              resolve();
          }else{
              R.logger.error(`The User[${user}] DON'T have permissions: ${restrictionUser}`);
@@ -90,11 +91,11 @@ function haltOnTimedout(request, response, next){
     next();  
 }
 
-function init(app){
+function init(app, limit){
     app.use(timeout(R.properties.get('app.restlet.response.timeout')));
-    app.use(R.bodyParser.urlencoded({ extended: false }));  
+    app.use(R.bodyParser.urlencoded({limit: '2mb', extended: false }));  
     app.use(haltOnTimedout);
-    app.use(R.bodyParser.json());
+    app.use(R.bodyParser.json({limit: '2mb'}));
     app.use(R.methodOverride());
 
     app.use(R.session({
@@ -134,14 +135,14 @@ function startService(service,app,router, port){
     }
 }
 exports.startService = startService;
-
-exports.validateTokenAndPermission= ({headers, restriction})=>{
+/*
+exports.validateTokenAndPermission= ({headers, restriction}, testOptions)=>{
     let promise = new Promise((resolve, reject) => {
         let projectId=headers['x-projectid'];
         if(projectId===undefined){
             reject('projectId not found');
         }else{
-            getPhrase(projectId).then((phrase)=>{
+            getPhrase(projectId,testOptions).then((phrase)=>{
                 if(restriction){    
                     let token = headers['x-access-token'];
                     let tokenusername = headers['ux'];
@@ -158,29 +159,33 @@ exports.validateTokenAndPermission= ({headers, restriction})=>{
    });
    return promise;
 }
-let sendResponse = (response, httpCode, bodyOut, bodyIn, service,startTime) => {
-    if(bodyIn.pwd!=undefined){
+*/
+let sendResponse = (response, httpCode, bodyOut, bodyIn, service,startTime, notShowResponse) => {
+    R.logger.info('---->', bodyIn);
+    if(bodyIn!=undefined && bodyIn.pwd!=undefined){
         bodyIn.pwd="*********";
     }
-    if(bodyIn.user!=undefined && bodyIn.user.pwd!=undefined){
+    if(bodyIn!=undefined && bodyIn.user!=undefined && bodyIn.user.pwd!=undefined){
         bodyIn.user.pwd="*********";
     }
     let timeElapsed=startTime===undefined?'':`Elapsed time:${(new Date().getTime()-startTime)} milliseconds`;
-    R.logger.info(`service-response: ${service}`,httpCode, bodyOut, bodyIn,timeElapsed);
+    R.logger.info(`service-response: ${service}`,httpCode, notShowResponse===true?'':bodyOut, bodyIn,timeElapsed);
     //response.statustest=httpCode;
     response.status(httpCode).send(bodyOut);
 }
 exports.sendResponse=sendResponse;
 
-let getPhrase=(projectId)=>{
-    let promise = new Promise((resolve, reject)=>{
+let getPhrase=(projectId,testOptions)=>{
+    let errorDummy = appUtil.getErrorDummy(testOptions,'err_phrase');
+    if(errorDummy===undefined){
+       return new Promise((resolve, reject)=>{
         let phrase=mapPhrases.get(projectId);
         if(phrase){
             R.logger.info('Obteing phrases in memory', phrase);
             resolve(phrase);
         }else{
             R.logger.info('Obtein phrases in DB!!!',projectId)
-            database.findById('general', R.constants.INDEX_PROJECT,projectId).then(result => {
+            database.findById('general', R.constants.INDEX_PROJECT,projectId,testOptions).then(result => {
                 //R.logger.info('PPPPPPPPPPPPPPPPPPPPPPPPPP', result);
                 if(result.total > 0){
                     phrase=result.records[0].phrase
@@ -191,30 +196,41 @@ let getPhrase=(projectId)=>{
                     reject('project not exists:'+projectId);
                 }
                 resolve(phrase);
-            });
+            },error=>reject(error));
         }
     });
-    return promise;
+    }else {
+        R.logger.info('**Returning error dummy->',errorDummy);
+        return appUtil.sendTestError(errorDummy);
+    }
 }; 
 exports.getPhrase=getPhrase;
 
-let validateAll=(validations,request={}, params)=>{    
-    return new Promise((resolve, reject)=>{
-        let validation=validations[0];
-        if(validations.length>1){
-            validate(validation,request,params).then((result)=>
-                validateAll(validations.slice(1,validations.length),request, params).then(
+let validateAll=(validations,request={}, params,testOptions)=>{    
+    R.logger.info('validate all....');
+    let errorDummy = appUtil.getErrorDummy(testOptions,`err_schema`);
+    if(errorDummy===undefined){
+        return new Promise((resolve, reject)=>{
+            let validation=validations[0];
+            if(validations.length>1){
+                validate(validation,request,params).then((result)=>
+                    validateAll(validations.slice(1,validations.length),request, params).then(
+                        ()=>resolve()
+                        ,error=>reject(error)
+                    )
+                ,error=>reject(error)
+                );
+            }else{
+                validate(validation,request,params).then(
                     ()=>resolve()
-                    ,error=>reject(error)
-                )
-            ,error=>reject(error)
-            );
-        }else{
-            validate(validation,request,params).then(
-                ()=>resolve()
-                ,error=>reject(error));
-            }    
-    })};
+                    ,error=>reject(error));
+                }    
+        })
+    }else {
+        R.logger.info('**Returning error dummy->',errorDummy);
+        return appUtil.sendTestError({httpcode:R.constants.HTTP_BAD_REQUEST, error:errorDummy});
+    }
+};
 exports.validateAll=validateAll;
 
 let validate=(validation, request, params)=>{

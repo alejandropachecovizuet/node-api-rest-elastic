@@ -1,3 +1,4 @@
+/*
 let expect  = require('chai').expect;
 let request = require('request');
 
@@ -14,3 +15,4 @@ step('loopback', function(done) {
     });
    });
 }); 
+*/

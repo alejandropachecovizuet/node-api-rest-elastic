@@ -30,19 +30,20 @@ return new Promise((resolve,reject)=>{
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
 
     restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','schema','validate_token']
-                ,request,{schema:index,restriction:`app.db.${request.params.index}.add`}).then(
-             ()=>database.findById(projectId, index,id).then(
+                ,request,{schema:index,restriction:`app.db.${index}.add`}).then(
+             ()=>database.findById(projectId, index,id,testOptions).then(
                     resultFind=>{
                         R.logger.debug('Record found!!!');
                         if(resultFind.total==0){
                             body["time_created"]=appUtil.getCurrentDateForElastic();
                             body["user_created"]=request.headers['x-user'];
-                            database.add(projectId,index,id,body).then(resultAdd => { 
+                            database.add(projectId,index,id,body,testOptions).then(resultAdd => { 
                                                 //updateChangesControl(index);
                                                 resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:resultAdd, bodyIn:body, service:thisService,startTime});
                                                 //restApiUtil.sendResponse(response,R.constants.HTTP_OK, resultAdd, request.body,thisService,startTime);
@@ -67,13 +68,14 @@ return new Promise((resolve,reject)=>{
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
 
     restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','validate_token']
-                ,request,{restriction:`app.db.${request.params.index}.search`}).then(
-            ()=>database.findById(projectId, index,id).then(result =>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
+                ,request,{restriction:`app.db.${index}.search`}).then(
+            ()=>database.findById(projectId, index,id,testOptions).then(result =>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
                 //restApiUtil.sendResponse(response,R.constants.HTTP_OK,result,body,thisService,startTime)
             ,error=>{
                     R.logger.fatal(`No es posible realizar la búsqueda del id[${id}]`, error);
@@ -91,13 +93,14 @@ return new Promise((resolve,reject)=>{
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
 
     restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','validate_token']
-                ,request,{restriction:`app.db.${request.params.index}.search`}).then(
-            ()=>database.find(projectId,index,body,index).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
+                ,request,{restriction:`app.db.${index}.search`}).then(
+            ()=>database.find(projectId,index,body,index,testOptions).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
                 //restApiUtil.sendResponse(response,R.constants.HTTP_OK,result,body,thisService, startTime)
             ,error =>{
                     R.logger.fatal(`No es posible realizar la búsqueda:`,error);
@@ -114,13 +117,14 @@ return new Promise((resolve,reject)=>{
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
 
     restApiUtil.validateAll(['projectid_header','user_header','token_header','schema','restriction','validate_token']
-                ,request,{schema:index,restriction:`app.db.${request.params.index}.update`}).then(
-            ()=>database.findById(projectId,index ,id).then(
+                ,request,{schema:index,restriction:`app.db.${index}.update`}).then(
+            ()=>database.findById(projectId,index ,id,testOptions).then(
                     resultFind=>{
                         R.logger.debug('Record found!!!');
                         if(resultFind.total==1){
@@ -129,7 +133,7 @@ return new Promise((resolve,reject)=>{
                             body["user_updated"]=request.headers['x-user'];
                             body["time_created"]=data.time_created;
                             body["user_created"]=data.user_created;
-                                database.update(projectId, index,id,body).then(result => { 
+                                database.update(projectId, index,id,body,testOptions).then(result => { 
                                                 //updateChangesControl(index);
                                                 resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime});
                                                 //restApiUtil.sendResponse(response,R.constants.HTTP_OK, result, request.body,thisService,startTime);
@@ -154,17 +158,18 @@ return new Promise((resolve,reject)=>{
     const {method, url, body, params: {index, id}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
+    const testOptions=request.testOptions;
     
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
 
     restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','validate_token']
-                ,request,{restriction:`app.db.${request.params.index}.delete`}).then(
-            ()=>database.findById(projectId, index ,id).then(
+                ,request,{restriction:`app.db.${index}.delete`}).then(
+            ()=>database.findById(projectId, index ,id,testOptions).then(
                     resultFind=>{
                         R.logger.debug('Record found!!!');
                         if(resultFind.total==1){
-                            database.deleteById(projectId, index, index,id).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
+                            database.deleteById(projectId, index, index,id,testOptions).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
                                 //restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService,startTime)
                             ,error=>{
                                   R.logger.error('No fue posible borrar el registro['+index+']['+id+']:',error.message);

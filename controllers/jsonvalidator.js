@@ -25,6 +25,17 @@ const schemas={
     },
     "additionalProperties": false,
     "required": ["user","projectDescription"],         
+  },
+  "file_manager_schema":{
+    "description": "Schema for file manager",
+    "properties": {
+      "file": {"type": "string"},
+      "name":  {"type": "string"},
+      "scope":  {"type": "string" ,"pattern" :"^(Global|Private)$"},
+      "unzipFormat":{"type": "string" ,"pattern" :"^(zip|gz|bz2|tar|tar.gz|tar.bz2|tgz|tbz2)$"},
+    },
+    "additionalProperties": false,
+    "required": ["file"],         
   }
   ,"authenticate_schema":{
       "description": "Schema for login authentication",

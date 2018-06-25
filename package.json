@@ -9,17 +9,21 @@
     "elasticsearch": "^15.0.0",
     "express": "^4.7.1",
     "express-session": "^1.11.3",
+    "file-type": "^8.0.0",
     "fs": "0.0.2",
     "http": "0.0.0",
     "https": "~1.0.0",
+    "inly": "^2.0.2",
     "jsonschema": "~1.2.4",
     "jsonwebtoken": "~8.3.0",
     "jwt-simple": "~0.5.0",
     "method-override": "^2.1.2",
     "mongodb": "^3.0.10",
-    "properties-reader": "0.0.16"
+    "properties-reader": "0.0.16",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "thread-sleep": "^2.1.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "mocha-steps": "^1.1.0",
