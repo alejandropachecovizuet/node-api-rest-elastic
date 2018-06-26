@@ -21,9 +21,8 @@ exports.add=(request, response)=>{
         const id=scope.substr(0,1)+uuid();
         
         let startTime = new Date().getTime();
-//        restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','schema','validate_token']
-        restApiUtil.validateAll(['projectid_header','user_header','token_header','schema','validate_token']    
-                      ,request,{schema:'file_manager_schema',restriction:`app.db.add`}).then(
+        restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','schema','validate_token']    
+                      ,request,{schema:'file_manager_schema',restriction:`app.db.files.add`}).then(
                  ()=>{
                     body["time_created"]=appUtil.getCurrentDateForElastic();
                     body["user_created"]=request.headers['x-user'];
@@ -68,20 +67,33 @@ exports.findById=(request, response)=>{
     };
     
 let findByIdGlobal=(request, response)=>{
-    const {method, url, body, params: {id}, headers}=request;
+    const {method, url, body, params: {id, subId}, headers}=request;
     const thisService=`[${method}]${url}`;
     const projectId=headers['x-projectid'];
     const testOptions=request.testOptions;
-    R.logger.info('projectId:' + projectId);
+    R.logger.info('projectId:' + projectId, 'subId', subId);
 
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
     return new Promise((resolve,reject)=>    
         database.findById(projectId, R.constants.INDEX_FILES,id,testOptions).then(result =>{
-        //R.logger.info(result);
         if(result.total===1){
             //R.logger.info('result:',result);
-            resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});
+            if(subId===undefined){
+                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});
+            }else{
+                let arr=result.records[0].files;
+                let arrResult=[];
+                R.logger.info('--->length',arr.length);
+                for (var i = 0; i < arr.length; i++) {
+                    if(arr[i].uuid==subId){
+                        R.logger.info('found->', arr[i].uuid);
+                        arrResult.push(arr[i]);
+                        }
+                  }
+                  result.records[0].files=arrResult;
+                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});                
+            }
         }else{
             reject({response, httpCode: R.constants.HTTP_NOT_FOUND, bodyOut:R.constants.HTTP_NOT_FOUND, bodyIn:body, service:thisService,startTime});                        
         }
@@ -90,10 +102,6 @@ let findByIdGlobal=(request, response)=>{
             reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
     }))};
 exports.findByIdGlobal=findByIdGlobal;    
-
-let writeFile=(file, data)=>{
-    fs.writeFileSync(file, data, err=>{}); 
-};
 
 let extractFile=(body,testOptions)=>new Promise((resolve, reject)=>{
     if(body.unzipFormat===undefined){
@@ -110,7 +118,7 @@ let extractFile=(body,testOptions)=>new Promise((resolve, reject)=>{
 
         const fileTmp=`/tmp/${uuid()}.${x}${body.unzipFormat}`;
         R.logger.info(fileTmp);
-        writeFile(fileTmp,data);
+        fs.writeFileSync(fileTmp,data, err=>{});
         R.logger.info('Se descomprime el archivo porque viene en zip');
         fileUtil.extractAndObtainB64(fileTmp).then(list=>{
             if(list.length===1){
@@ -121,3 +129,41 @@ let extractFile=(body,testOptions)=>new Promise((resolve, reject)=>{
             },error=>resolve({file:`${prefix}${body.file}`, warning:'It is not possible to unzip the file, but the original file was saved'}));	
     }
 });
+
+
+exports.deleteById=(request, response)=>{
+    return new Promise((resolve,reject)=>{    
+        const {method, url, body, params: {id}, headers}=request;
+        const thisService=`[${method}]${url}`;
+        const projectId=headers['x-projectid'];
+        const testOptions=request.testOptions;
+        const index='files';
+        
+        let startTime = new Date().getTime();
+        R.logger.debug(thisService);
+    
+        restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','validate_token']
+                    ,request,{restriction:'app.db.files.delete'}).then(
+                ()=>database.findById(projectId, index ,id,testOptions).then(
+                        resultFind=>{
+                            R.logger.debug('Record found!!!');
+                            if(resultFind.total==1){
+                                database.deleteById(projectId, index, index,id,testOptions).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
+                                ,error=>{
+                                      R.logger.error('No fue posible borrar el registro['+index+']['+id+']:',error.message);
+                                      if(error.message==='Not Found'){
+                                        reject({response, httpCode:R.constants.HTTP_NOT_FOUND, bodyOut:error, bodyIn:body, service:thisService,startTime});
+                                    }else{
+                                        reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
+                                    }
+                                });
+                            }else{
+                                R.logger.error('Recdord not found', url);
+                                reject({response, httpCode:R.constants.HTTP_NOT_FOUND, bodyOut:R.constants.ERROR_NOT_FOUND, bodyIn:body, service:thisService,startTime});
+                                }
+                        },error=>reject({response, httpCode:R.constants.HTTP_NOT_FOUND, bodyOut:error, bodyIn:body, service:thisService,startTime})
+                    ),error=>reject({response, httpCode:error.httpcode, bodyOut:error.error, bodyIn:body, service:thisService,startTime})
+                )
+        });
+    };
+    

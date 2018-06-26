@@ -17,24 +17,31 @@ router.route('/file').put(function(request, response) { //xDoc-Desc:Servicio que
         ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
 });
 
-router.route('/file/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+let find=(request, response)=>{
         const {params: {id}}=request;
        if(id.startsWith('G')){
-               R.logger.info('Es publico!!!!', id);
                 controller.findByIdGlobal(request, response)
                 .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime, true )
                 ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
        }else{
-        R.logger.info('Es privado!!!!', id);
                 controller.findById(request, response)
                 .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime, true )
                 ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));                   
        }
+}
 
+router.route('/file/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+        find(request, response);
     });
+
     
+router.route('/file/:id/:subId').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+        find(request, response);
+});
+
+
 router.route('/file/:id').delete(function(request, response) { //xDoc-Desc:Servicio que permite borrar un archivo:{"projectId":"projectId", "user": {"username":'x@x.com', "pwd":"123456"}}  xDoc-Response:200 OK 
-        controller.delete(request, response)
+        controller.deleteById(request, response)
         .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime )
         ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
 });

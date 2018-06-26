@@ -38,7 +38,7 @@ let findFilesBase64=folder=>new Promise((resolve, reject)=>{
 				buffer=fs.readFileSync(path);
 				const fileTypeFile= fileType(buffer);
 				const prefix=fileTypeFile===null?'':`data:${fileTypeFile.mime};base64,`;						
-				filesb64.push({ file:prefix+buffer.toString('base64'), filename: file});
+				filesb64.push({ uuid:uuid() ,file:prefix+buffer.toString('base64'), filename: file});
 				try { fs.unlink(path,()=>{}); } catch (error) {}
 			  });
 			}

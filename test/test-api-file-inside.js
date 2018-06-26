@@ -12,6 +12,7 @@ let user='x@x.com';
 let token=''; 
 let pwd=jwt.encrypt('123456',projectId);
 let lastIdFile='';
+let subId='';
 
 describe('*********************************** Unit test api-rest - INSIDE- file manager *********************************** ', function() {
     step('init-project-inside', async ()=> {
@@ -81,6 +82,24 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             console.info("\t\tResponse: ",result);
             expect(result.httpCode).to.equal(code)
             expect(result.bodyOut.files).to.have.lengthOf(6);
+            subId=result.bodyOut.files[0].uuid;
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+
+    step(`search-subId-${testName}`, async ()=> {
+        sleep(1000);
+        request={method:'', url:'/test', params:{id:lastIdFile, subId}, headers: {'x-projectid':projectId}};
+        response={headers:[]};
+        let code=200;
+        try {
+            const result = await fileManager.findByIdGlobal(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+            expect(result.bodyOut.files).to.have.lengthOf(1);
+            subId=result.bodyOut.files[0].uuid;
             lastIdFile=undefined;
         } catch (error) {
             console.error(error);
@@ -602,7 +621,6 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             const result = await fileManager.findById(request, response);
             //console.info("\t\tResponse: ",result);
             expect(result.httpCode).to.equal(code)
-            lastIdFile=undefined;
         } catch (error) {
             console.error(error);
             expect(error.httpCode).to.equal(code);                
@@ -622,7 +640,6 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             expect(result.bodyOut.warning).to.equal(undefined);
             expect(result.bodyOut.id).to.be.a('string');
 
-            lastIdFile=result.bodyOut.id;
             console.info('lastIdFile:',lastIdFile);
 
         } catch (error) {
@@ -660,7 +677,6 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             expect(result.bodyOut.warning).to.be.a('string');
             expect(result.bodyOut.id).to.be.a('string');
 
-            lastIdFile=result.bodyOut.id;
             console.info('lastIdFile:',lastIdFile);
 
         } catch (error) {
@@ -668,4 +684,78 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             expect(error.httpCode).to.equal(code);                
         }
     });
+
+    step('delete-error-findById-inside', async ()=> {
+        let testOptions={err_db_findById_files:'Error provocado para las pruebas unitarias - buscando el registro registro'};        
+        request={testOptions,method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        response={headers:[]};
+        let code=404;
+        try {
+            const result = await fileManager.deleteById(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+
+    step('delete-not-exists-inside', async ()=> {
+        request={method:'', url:'/test', params:{id:`${lastIdFile}x`}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        response={headers:[]};
+        let code=404;
+        try {
+            const result = await fileManager.deleteById(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+
+    step('delete-not-autorizad-inside', async ()=> {
+        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId ,'x-user':user}};
+        response={headers:[]};
+        let code=401;
+        try {
+            const result = await fileManager.deleteById(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+
+    step('delete-inside', async ()=> {
+        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        response={headers:[]};
+        let code=200;
+        try {
+            const result = await fileManager.deleteById(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+    
+    step('delete-not-found-inside', async ()=> {
+        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        response={headers:[]};
+        let code=404;
+        try {
+            const result = await fileManager.deleteById(request, response);
+            console.info("\t\tResponse: ",result);
+            expect(result.httpCode).to.equal(code)
+        } catch (error) {
+            console.error(error);
+            expect(error.httpCode).to.equal(code);                
+        }
+    });
+
+
+
 });

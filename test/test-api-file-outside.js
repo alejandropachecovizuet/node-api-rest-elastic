@@ -515,10 +515,33 @@ describe('*********************************** Unit test api-rest - file manager 
             'x-projectid':projectId} } , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(401);
-            lastIdFile=undefined;
+//            lastIdFile=undefined;
             done();
         });
     });
 
+    step(`delete-${testName}`, function(done) {
+        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
+        request.delete({url:urlStr,headers: {
+            'x-access-token': token
+            ,'x-projectid':projectId
+            ,'x-user':user} } , function(error, response, body) {        
+            //console.info("\t\tResponse: ",JSON.parse(response.body).file);
+            expect(response.statusCode).to.equal(200);
+            done();
+        });
+    });
+
+    step(`delete-not-found-${testName}`, function(done) {
+        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
+        request.delete({url:urlStr,headers: {
+            'x-access-token': token
+            ,'x-projectid':projectId
+            ,'x-user':user} } , function(error, response, body) {        
+            //console.info("\t\tResponse: ",JSON.parse(response.body).file);
+            expect(response.statusCode).to.equal(404);
+            done();
+        });
+    });
 
 });
