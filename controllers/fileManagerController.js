@@ -32,9 +32,17 @@ exports.add=(request, response)=>{
                             body["file"]= result.file;
                             body["fileType"]= result.fileType;        
                             body["files"]= result.files;     
+                            let unzip_ids=undefined;
+                            if(result.files!=undefined){
+                                unzip_ids=[];
+                                for (var i = 0; i < result.files.length; i++) {
+                                        R.logger.debug('Addd->', result.files[i].uuid);
+                                        unzip_ids.push(result.files[i].uuid);
+                                    }
+                                  }
                             database.add(projectId,R.constants.INDEX_FILES,id,body,testOptions).then(resultAdd => {
                                                 let warning=result.warning; 
-                                                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:{id, warning}, bodyIn:'', service:thisService,startTime});
+                                                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:{id, unzip_ids, warning}, bodyIn:'', service:thisService,startTime});
                                             }, error => 
                                             reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:'', service:thisService,startTime})
                                             )
@@ -50,13 +58,12 @@ exports.findById=(request, response)=>{
     return new Promise((resolve,reject)=>{    
         const {method, url, body, params: {id}, headers}=request;
         const thisService=`[${method}]${url}`;
-        const projectId=headers['x-projectid'];
         const testOptions=request.testOptions;
         
         let startTime = new Date().getTime();
         R.logger.debug(thisService);
     
-        restApiUtil.validateAll(['projectid_header','user_header','token_header','restriction','validate_token']
+        restApiUtil.validateAll(['user_header','token_header','restriction','validate_token']
                     ,request,{restriction:`app.db.files.search`}).then(
                 ()=>findByIdGlobal(request,response)
                     .then(result =>resolve(result)
@@ -67,11 +74,9 @@ exports.findById=(request, response)=>{
     };
     
 let findByIdGlobal=(request, response)=>{
-    const {method, url, body, params: {id, subId}, headers}=request;
+    const {method, url, body, params: {id, subId, projectId}, headers}=request;
     const thisService=`[${method}]${url}`;
-    const projectId=headers['x-projectid'];
     const testOptions=request.testOptions;
-    R.logger.info('projectId:' + projectId, 'subId', subId);
 
     let startTime = new Date().getTime();
     R.logger.debug(thisService);
@@ -79,12 +84,12 @@ let findByIdGlobal=(request, response)=>{
         database.findById(projectId, R.constants.INDEX_FILES,id,testOptions).then(result =>{
         if(result.total===1){
             //R.logger.info('result:',result);
-            if(subId===undefined){
+            if(subId===undefined || result.records[0].files=== undefined){
                 resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});
             }else{
+                console.info('**********************************************',result.records[0].files);
                 let arr=result.records[0].files;
                 let arrResult=[];
-                R.logger.info('--->length',arr.length);
                 for (var i = 0; i < arr.length; i++) {
                     if(arr[i].uuid==subId){
                         R.logger.info('found->', arr[i].uuid);

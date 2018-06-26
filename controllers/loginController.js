@@ -7,7 +7,7 @@ return new Promise((resolve,reject)=>{
     const {method, url, body}=request;
     const thisService=`[${method}]${url}`;
     let startTime = new Date().getTime();
-    R.logger.debug(thisService);
+    R.logger.debug('---->',thisService);
     const testOptions=request.testOptions;
 
     restApiUtil.validateAll(['schema'],request,{schema:'authenticate_schema'}).then(

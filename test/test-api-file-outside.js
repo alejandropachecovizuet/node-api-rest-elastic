@@ -9,6 +9,7 @@ let user='x@x.com';
 let token=''; 
 let pwd=jwt.encrypt('123456',projectId);
 let lastIdFile='';
+let subId='';
 
 describe('*********************************** Unit test api-rest - file manager *********************************** ', function() {
     step('init-project-outside', function(done) {
@@ -64,17 +65,50 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } , function(error, response, body) {        
             //console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).files).to.have.lengthOf(6);
-            lastIdFile=undefined;
+            subId=JSON.parse(response.body).files[0].uuid;
             done();
         });
     });
+
+    step(`search-subId-${testName}`, function(done) {
+        sleep(1000);
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}/${subId}`;
+        request.get({url:urlStr,headers: {} } , function(error, response, body) {        
+            //console.info("\t\tResponse: ",response.body);
+            expect(response.statusCode).to.equal(200);
+            expect(JSON.parse(response.body).files).to.have.lengthOf(1);
+            done();
+        });
+    });
+
+    
+    step(`searchb64-${testName}`, function(done) {
+        sleep(1000);
+        let urlStr=`http://localhost:20003/fileb64/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } , function(error, response, body) {        
+            //console.info("\t\tResponse: ",response.body);
+            expect(response.statusCode).to.equal(200);
+            expect(response.body).to.be.a('string');
+            done();
+        });
+    });
+
+    step(`searchb64-subId-${testName}`, function(done) {
+        sleep(1000);
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}/${subId}`;
+        request.get({url:urlStr,headers: {} } , function(error, response, body) {        
+            //console.info("\t\tResponse: ",response.body);
+            expect(response.statusCode).to.equal(200);
+            expect(response.body).to.be.a('string');
+            done();
+        });
+    });
+    
 
     testName='b64_all_zip-errorunzip-outside';
     step(`add-${testName}`, function(done) {
@@ -99,10 +133,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -134,10 +167,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -169,10 +201,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -205,10 +236,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -241,10 +271,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } ,
+             function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -276,10 +305,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -311,10 +339,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -346,10 +373,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -381,10 +407,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -417,10 +442,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId
-            } } , function(error, response, body) {        
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
             expect(JSON.parse(response.body).file).to.be.a('string');
@@ -430,12 +454,12 @@ describe('*********************************** Unit test api-rest - file manager 
         });
     });
 
+    
     step('search-not-found-outside', function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/P77b4d1c0-78b6-11e8-9239-ade58e6e5671`;
+        let urlStr=`http://localhost:20003/file/${projectId}/P77b4d1c0-78b6-11e8-9239-ade58e6e5671`;
         request.get({url:urlStr,headers: {
             'x-access-token': token
-            ,'x-projectid':projectId
             ,'x-user':user} } , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(404);
@@ -446,13 +470,12 @@ describe('*********************************** Unit test api-rest - file manager 
 
 
     step('error-schema-outside', function(done) {
-        let urlStr='http://localhost:20003/file';
+        let urlStr=`http://localhost:20003/file`;
         request.put({url:urlStr,  form: {"file":b64s.b64_one_tbz2
         ,"namex":"Archivo de prueba unitaria"
         ,"unzipFormat":"tbz2"
        },headers: { 
             'x-access-token': token
-            ,'x-projectid':projectId
             ,'x-user':user} } , function(error, response, body) {        
             console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(400);
@@ -495,10 +518,9 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
         request.get({url:urlStr,headers: {
             'x-access-token': token
-            ,'x-projectid':projectId
             ,'x-user':user} } , function(error, response, body) {        
             //console.info("\t\tResponse: ",JSON.parse(response.body).file);
             expect(response.statusCode).to.equal(200);
@@ -510,12 +532,10 @@ describe('*********************************** Unit test api-rest - file manager 
 
     step(`search-error-notautorized-${testName}`, function(done) {
         sleep(1000);
-        let urlStr=`http://localhost:20003/file/${lastIdFile}`;
-        request.get({url:urlStr,headers: {
-            'x-projectid':projectId} } , function(error, response, body) {        
-            //console.info("\t\tResponse: ",JSON.parse(response.body).file);
+        let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
+        request.get({url:urlStr,headers: {} } 
+            , function(error, response, body) {        
             expect(response.statusCode).to.equal(401);
-//            lastIdFile=undefined;
             done();
         });
     });

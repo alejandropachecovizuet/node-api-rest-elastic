@@ -36,7 +36,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
         });    
 
     step('authenticate-ok-inside', async ()=> {
-        sleep(1000);
+        sleep(2000);
         let body={email:"x@x.com", pwd, projectId};
         request={method:'', url:'/test', body, headers: {}};
         response={headers:[]};
@@ -74,7 +74,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -91,7 +91,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-subId-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile, subId}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, subId, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -131,7 +131,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -171,7 +171,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -210,7 +210,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -249,7 +249,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -288,7 +288,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -327,7 +327,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -366,7 +366,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -405,7 +405,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -444,7 +444,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -483,7 +483,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -500,7 +500,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step('search-not-found-inside', async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:'P77b4d1c0-78b6-11e8-9239-ade58e6e5671'}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:'P77b4d1c0-78b6-11e8-9239-ade58e6e5671', projectId}, headers: {}};
         response={headers:[]};
         let code=404;
         try {
@@ -598,7 +598,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
     
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {'x-access-token': token ,'x-user':user}};
         response={headers:[]};
         let code=200;
         try {
@@ -614,7 +614,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-error-notautorized-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile}, headers: {'x-projectid':projectId}};
+        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=401;
         try {
@@ -650,7 +650,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step('search-error-findBy-inside', async ()=> {
         let testOptions={err_db_findById_files:'Error provocado para las pruebas unitarias - buscando el registro registro'};        
-        request={testOptions,method:'', url:'/test', params:{id:'lastIdFile'}, headers: {'x-access-token': token ,'x-projectid':projectId ,'x-user':user}};
+        request={testOptions,method:'', url:'/test', params:{id:'lastIdFile', projectId}, headers: {'x-access-token': token  ,'x-user':user}};
         response={headers:[]};
         let code=500;
         try {

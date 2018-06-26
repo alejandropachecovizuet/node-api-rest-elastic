@@ -30,13 +30,42 @@ let find=(request, response)=>{
        }
 }
 
-router.route('/file/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+let findb64=(request, response)=>{
+        const {params: {id}}=request;
+       if(id.startsWith('G')){
+                controller.findByIdGlobal(request, response)
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+       }else{
+                controller.findById(request, response)
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));                   
+       }
+}
+
+let getOnlyB64= (bodyResponse)=>{
+        
+        if(bodyResponse.file!=undefined){
+          return bodyResponse.file;
+        }else if(bodyResponse.files!=undefined && bodyResponse.files.length===1){
+          return bodyResponse.files[0].file;
+        }
+}
+
+router.route('/file/:projectId/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
         find(request, response);
     });
-
     
-router.route('/file/:id/:subId').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+router.route('/file/:projectId/:id/:subId').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
         find(request, response);
+});
+
+router.route('/fileb64/:projectId/:id').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+        findb64(request, response);
+    });
+    
+router.route('/fileb64/:projectId/:id/:subId').get(function(request, response) { //xDoc-Desc:Busca el registro <b>:id</b> xDoc-Header:<b>x-access-token</b>=Token xDoc-Header:<b>ux</b>=Usuario con el que se creó el Token
+        findb64(request, response);
 });
 
 

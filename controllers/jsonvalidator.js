@@ -143,16 +143,20 @@ const schemas={
 };
 
 exports.validateVsSchema = (schemaName, data) => new Promise((resolve, reject) => {
+        console.info('validating ..... Schema!!'); 
         const schemaEquivalent = schemasEquivalent[schemaName];
         const schema = schemaEquivalent?schemas[schemaEquivalent]:schemas[schemaName];
         if(!schema){
-            reject('Schema not found!!!');
+          console.info('Schema not found!!');
+          reject('Schema not found!!!');
         }else {
           let validate = new Ajv({allErrors: true}).compile(schema);
           if (validate(data)){
+            console.info('Schema ok!!!');
               resolve(data);
           } else{
-              reject(validate.errors);
+            console.info('Schema error!!!',validate.errors);
+            reject(validate.errors);
           }
           }
     });

@@ -236,7 +236,16 @@ exports.validateAll=validateAll;
 let validate=(validation, request, params)=>{
     R.logger.debug('Validating ...', validation);
     const {headers, body}=request;
-    const projectId=headers['x-projectid'];
+    let projectId;
+    try {
+        projectId=headers['x-projectid'];
+        if(projectId===undefined){
+        projectId=request.params.projectId;                  
+        }        
+    } catch (error) {
+        
+    }
+    R.logger.debug('-->projectId', projectId);
     const token=headers['x-access-token'];
     const user=headers['x-user'];
     
