@@ -7,6 +7,8 @@ let jsonvalidator= require('../controllers/jsonvalidator');
 let timeout = require('connect-timeout');
 let allRoles;
 let mapPhrases=new Map();
+//let compression = require('compression');
+//var helmet = require('helmet');
 
 exports.setHeader=(response, header, value)=>{
    try {
@@ -93,10 +95,13 @@ function haltOnTimedout(request, response, next){
 
 function init(app, limit){
     app.use(timeout(R.properties.get('app.restlet.response.timeout')));
-    app.use(R.bodyParser.urlencoded({limit: '2mb', extended: false }));  
+    app.use(R.bodyParser.urlencoded({limit, extended: false }));  
     app.use(haltOnTimedout);
-    app.use(R.bodyParser.json({limit: '2mb'}));
+    app.use(R.bodyParser.json({limit}));
     app.use(R.methodOverride());
+    //app.use(helmet);
+    //app.use(compression);
+    
 
     app.use(R.session({
         resave: false,

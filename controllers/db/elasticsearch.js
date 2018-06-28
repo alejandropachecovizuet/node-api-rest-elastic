@@ -87,7 +87,7 @@ exports.deleteById = (projectId,index, type, id) => {
     return promise;
 };
 
-
+/*
 exports.getSuggestions = (index,input) => getInstance().suggest({
         index: index,
         type: "document",
@@ -100,4 +100,4 @@ exports.getSuggestions = (index,input) => getInstance().suggest({
                 }
             }
         }
-    });
+    });*/

@@ -9,7 +9,7 @@ let controller = require('../controllers/fileManagerController');
 let app = R.express();
 let rest='fileManager';
 
-let router=restApiUtil.init(app);
+let router=restApiUtil.init(app, R.properties.get('app.restlet.file.limit'));
 
 router.route('/file').put(function(request, response) { //xDoc-Desc:Servicio que permte subir un archivo en base64: {"file":"base64", "Nombre":"Nombre del archivo"}  xDoc-Response:200 OK 
         controller.add(request, response)
