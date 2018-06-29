@@ -9,12 +9,12 @@ let rest='login';
 let controller = require('../controllers/loginController');
 
 
-let router=restApiUtil.init(app);
+let router=restApiUtil.init(app, rest);
 
 router.route('/authenticate').post(function(request, response) { //xDoc-Desc:Authenticación del usuario xDoc-JSON-Example:{"username":"luisXV", "pwd":"123456"}  xDoc-Response:Usuario + Token 
         controller.authenticate(request, response)
-        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime )
-        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime )
+        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));    
 });
 
 router.route('/_stats').get( (request, response)=> restApiUtil.stats(request,response)); /* xDoc-NoDoc */    

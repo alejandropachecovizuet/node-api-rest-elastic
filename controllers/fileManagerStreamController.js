@@ -13,7 +13,7 @@ exports.upload=(request, response, next)=>{
     return new Promise((resolve,reject)=>{    
         const {method, url, body: {scope=R.constants.SCOPE_GLOBAL}, params: {id}, headers}=request;
         const thisService=`[${method}]${url}`;
-        const projectId=headers['x-projectid'];
+        const projectId=headers[R.constants.HEADER_PROJECTID];
         const testOptions=request.testOptions;
         R.logger.debug(thisService);
 

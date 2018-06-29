@@ -9,24 +9,24 @@ let controller = require('../controllers/fileManagerController');
 let app = R.express();
 let rest='fileManager';
 
-let router=restApiUtil.init(app, R.properties.get('app.restlet.file.limit'));
+let router=restApiUtil.init(app, R.properties.get('app.restlet.file.limit'), rest);
 
 router.route('/file').put(function(request, response) { //xDoc-Desc:Servicio que permte subir un archivo en base64: {"file":"base64", "Nombre":"Nombre del archivo"}  xDoc-Response:200 OK 
         controller.add(request, response)
-        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime )
-        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime )
+        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));    
 });
 
 let find=(request, response)=>{
         const {params: {id}}=request;
        if(id.startsWith('G')){
                 controller.findByIdGlobal(request, response)
-                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime, true )
-                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));    
        }else{
                 controller.findById(request, response)
-                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime, true )
-                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));                   
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));                   
        }
 }
 
@@ -34,12 +34,12 @@ let findb64=(request, response)=>{
         const {params: {id}}=request;
        if(id.startsWith('G')){
                 controller.findByIdGlobal(request, response)
-                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
-                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));    
        }else{
                 controller.findById(request, response)
-                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
-                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));                   
+                .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, getOnlyB64(bodyOut), bodyIn, service,startTime, true )
+                ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));                   
        }
 }
 
@@ -71,8 +71,8 @@ router.route('/fileb64/:projectId/:id/:subId').get(function(request, response) {
 
 router.route('/file/:id').delete(function(request, response) { //xDoc-Desc:Servicio que permite borrar un archivo:{"projectId":"projectId", "user": {"username":'x@x.com', "pwd":"123456"}}  xDoc-Response:200 OK 
         controller.deleteById(request, response)
-        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime )
-        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+        .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime )
+        ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response , httpCode, bodyOut, bodyIn, service,startTime ));    
 });
 
 router.route('/_stats').get( (request, response)=> restApiUtil.stats(request,response)); /* xDoc-NoDoc */    

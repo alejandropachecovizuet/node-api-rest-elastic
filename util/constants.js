@@ -33,6 +33,13 @@ define('INDEX_ROL', 'roles');
 define('INDEX_PROJECT', 'projects'); 
 define('INDEX_USER', 'users'); 
 define('INDEX_FILES', 'files'); 
+define('INDEX_TRANSACTIONS', 'transactions'); 
 
 /***** Scopes *****/
 define('SCOPE_GLOBAL', 'Global'); 
+
+/***** Scopes *****/
+define('HEADER_PROJECTID', 'x-projectid'); 
+define('HEADER_USER', 'x-user'); 
+define('HEADER_TOKEN', 'x-access-token'); 
+define('HEADER_API_KEY', 'x-apiKey'); 

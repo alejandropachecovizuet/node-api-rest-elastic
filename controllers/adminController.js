@@ -9,7 +9,6 @@ const GENERAL_PROJECT='general';
 function initProject(request, response){
     return new Promise((resolve,reject)=>{
     const {method, url, body, params: {projectId}, headers}=request;
-    const {projectDescription: description,user: {email, pwd }} = body;
     const phrase=uuid();
     const thisService=`[${method}]${url}`;
     const testOptions=request.testOptions;
@@ -18,11 +17,11 @@ function initProject(request, response){
     R.logger.debug(thisService);
     restApiUtil.validateAll(['schema'],request,{schema:'admin_init_schema'},testOptions).then(
             ()=>{
+                const {projectDescription: description,user: {email, pwd }} = body;
                 R.logger.debug('Valitaion is OK!!!!');                
                 database.findById(GENERAL_PROJECT,R.constants.INDEX_PROJECT ,projectId,testOptions).then(
                     result=>{
-                        R.logger.debug('Record found!!!',result);
-                        if(result.total==0){0
+                        if(appUtil.isJsonEmpty(result)){
                             let bodyProject={
                                     description,
                                     plan:'initial',
@@ -47,6 +46,7 @@ function initProject(request, response){
                                                                  {"restriction":"app.db.files.delete"},
                                                                  {"restriction":"app.db.files.update"},
                                                                  {"restriction":"app.db.files.search"},
+                                                                 {"restriction":"app.db.transactions.search"},                                                                 
                                                                  {"restriction":"app.db.stream.add"},
                                                                  {"restriction":"app.db.stream.delete"},
                                                                  {"restriction":"app.db.stream.update"},
@@ -75,7 +75,6 @@ function initProject(request, response){
                                                     (result) => { 
                                                             R.logger.info(`User ${email} added `);
                                                             R.logger.info('Project, user and rol created succefully',response);
-                                                            //restApiUtil.sendResponse(response,R.constants.HTTP_OK, result, body,thisService, startTime);
                                                             resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime});
                                                     }, 
                                                     error => { 
@@ -96,22 +95,18 @@ function initProject(request, response){
                              }, error => {
                                  R.logger.error('Error creating project', error);
                                  reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
-                                 //restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService,startTime)
                                 });                                                 
                     }else{
                             R.logger.error('Duplicated project', url);
-                            //restApiUtil.sendResponse(response, R.constants.HTTP_DUPLICATED, R.constants.ERROR_DUPLICATED_KEY, body,thisService,startTime);
                             reject({response, httpCode:R.constants.HTTP_DUPLICATED, bodyOut:R.constants.HTTP_DUPLICATED, bodyIn:body, service:thisService,startTime});
                         }
             }, error => {
                     R.logger.debug('Error finding project', error);
                     reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
-                    //restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService, startTime)
                 }) }                                                
             ,error=> {
                 R.logger.info('Valitaion is ERROR!!!!', error);                
                 reject({response, httpCode:error.httpcode, bodyOut:error.error, bodyIn:body, service:thisService,startTime});
-                //restApiUtil.sendResponse(response,error.httpcode, error.error , body ,thisService,startTime)
             }
     )
 });
@@ -130,9 +125,7 @@ function deleteProject(request, response){
     database.deleteById(GENERAL_PROJECT,R.constants.INDEX_PROJECT, R.constants.INDEX_PROJECT ,projectId,testOptions).then(() => { 
             R.logger.info(`Project ${projectId} deleted `);
             resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:'', bodyIn:body, service:thisService,startTime});
-            //restApiUtil.sendResponse(response,R.constants.HTTP_OK, '', body,thisService,startTime);
     }, error => {
-            //restApiUtil.sendResponse(response,R.constants.HTTP_INTERNAL, error, body,thisService, startTime);
             reject({response, httpCode:R.constants.HTTP_INTERNAL, bodyOut:error, bodyIn:body, service:thisService,startTime});
     }); 
 }); 

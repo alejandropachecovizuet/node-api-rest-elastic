@@ -14,7 +14,7 @@ exports.add=(request, response)=>{
         const {method, url, body, body: {file, name, scope=R.constants.SCOPE_GLOBAL}, headers}=request;
         const contentType=undefined;
         const thisService=`[${method}]${url}`;
-        const projectId=headers['x-projectid'];
+        const projectId=headers[R.constants.HEADER_PROJECTID];
         const testOptions=request.testOptions;
         R.logger.debug(thisService);
 
@@ -25,7 +25,7 @@ exports.add=(request, response)=>{
                       ,request,{schema:'file_manager_schema',restriction:`app.db.files.add`}).then(
                  ()=>{
                     body["time_created"]=appUtil.getCurrentDateForElastic();
-                    body["user_created"]=request.headers['x-user'];
+                    body["user_created"]=request.headers[R.constants.HEADER_USER];
                     extractFile(body,testOptions)
                         .then(result=>{
                             //R.logger.info('-------------->', result);
@@ -82,22 +82,23 @@ let findByIdGlobal=(request, response)=>{
     R.logger.debug(thisService);
     return new Promise((resolve,reject)=>    
         database.findById(projectId, R.constants.INDEX_FILES,id,testOptions).then(result =>{
-        if(result.total===1){
+        if(!appUtil.isJsonEmpty(result)){
             //R.logger.info('result:',result);
-            if(subId===undefined || result.records[0].files=== undefined){
-                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});
+            if(subId===undefined || result.files=== undefined){
+                R.logger.info('-------------------------------->', subId);
+                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime});
             }else{
-                console.info('**********************************************',result.records[0].files);
-                let arr=result.records[0].files;
-                let arrResult=[];
+                //console.info('**********************************************',result.files);
+                let arr=result.files;
+                //let arrResult=[];
+                let obj=undefined;
                 for (var i = 0; i < arr.length; i++) {
                     if(arr[i].uuid==subId){
                         R.logger.info('found->', arr[i].uuid);
-                        arrResult.push(arr[i]);
+                        obj=arr[i];
                         }
                   }
-                  result.records[0].files=arrResult;
-                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result.records[0], bodyIn:body, service:thisService,startTime});                
+                resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:obj, bodyIn:body, service:thisService,startTime});                
             }
         }else{
             reject({response, httpCode: R.constants.HTTP_NOT_FOUND, bodyOut:R.constants.HTTP_NOT_FOUND, bodyIn:body, service:thisService,startTime});                        
@@ -140,7 +141,7 @@ exports.deleteById=(request, response)=>{
     return new Promise((resolve,reject)=>{    
         const {method, url, body, params: {id}, headers}=request;
         const thisService=`[${method}]${url}`;
-        const projectId=headers['x-projectid'];
+        const projectId=headers[R.constants.HEADER_PROJECTID];
         const testOptions=request.testOptions;
         const index='files';
         
@@ -152,7 +153,7 @@ exports.deleteById=(request, response)=>{
                 ()=>database.findById(projectId, index ,id,testOptions).then(
                         resultFind=>{
                             R.logger.debug('Record found!!!');
-                            if(resultFind.total==1){
+                            if(!appUtil.isJsonEmpty(resultFind)){
                                 database.deleteById(projectId, index, index,id,testOptions).then(result=>resolve({response, httpCode:R.constants.HTTP_OK, bodyOut:result, bodyIn:body, service:thisService,startTime})
                                 ,error=>{
                                       R.logger.error('No fue posible borrar el registro['+index+']['+id+']:',error.message);

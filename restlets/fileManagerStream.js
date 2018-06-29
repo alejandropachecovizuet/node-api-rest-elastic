@@ -10,13 +10,13 @@ let controller = require('../controllers/fileManagerStreamController');
 let app = R.express();
 let rest='fileManagerStream';
 
-let router=restApiUtil.init(app, '150mb');
+let router=restApiUtil.init(app, rest, '150mb' );
 
 router.route('/stream/:id').put(function(request, response, next) { //xDoc-Desc:Servicio que permte subir un archivo en base64: {"file":"base64", "Nombre":"Nombre del archivo"}  xDoc-Response:200 OK 
     R.logger.info('-->headers',request.headers);
     controller.upload(request, response, next)
-    .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime )
-    ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(response, httpCode, bodyOut, bodyIn, service,startTime ));    
+    .then(({response, httpCode, bodyOut, bodyIn, service,startTime}=response)=>restApiUtil.sendResponse(request, response, httpCode, bodyOut, bodyIn, service,startTime )
+    ,({response, httpCode, bodyOut, bodyIn, service,startTime}=error)=>restApiUtil.sendResponse(request, response, httpCode, bodyOut, bodyIn, service,startTime ));    
 });
 
 

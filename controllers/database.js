@@ -33,6 +33,16 @@ exports.add = (projectId,index, uuid,body,testOptions) => {
     }
 }
 
+exports.addAll = (body, index,testOptions) => {
+    let errorDummy = appUtil.getErrorDummy(testOptions,`err_db_addAll_${index}`);
+    if(errorDummy===undefined){
+       return getInstance().addAll(body);
+    }else {
+        R.logger.info('**Returning error dummy->',errorDummy);
+        return appUtil.sendTestError(errorDummy);
+    }
+}
+
 exports.update = (projectId,index, uuid,body,testOptions) =>{
     let errorDummy = appUtil.getErrorDummy(testOptions,`err_db_update_${index}`);
     if(errorDummy===undefined){

@@ -212,7 +212,7 @@ describe('*********************************** Unit test api-rest - general servi
 
     step('authenticate-body-vacio-inside', async ()=> {
         let body={};
-        request={method:'', url:'/test', body, headers: {}};
+        request={method:'', url:'/test-authenticate-body-vacio-inside', body, headers: {}};
         response={};
         let code=400;
         try {
@@ -854,4 +854,5 @@ describe('*********************************** Unit test api-rest - general servi
             expect(error.httpCode).to.equal(code);                
         }
     });    
+    
 });

@@ -6,7 +6,7 @@ let R = require("../util/rest-api-requires");
 let restApiUtil = require("../util/restApiUtil");
 let app = R.express();
 
-let router=restApiUtil.init(app);
+let router=restApiUtil.init(app, 'loopback');
 
 router.route('/_stats').get( (request, response)=> restApiUtil.stats(request,response)); /* xDoc-NoDoc */    
 
@@ -15,11 +15,11 @@ router.route('/loopback').post(function(request, response) { //xDoc-Desc:Servici
         const {method, url, body}=request;
         const thisService=`[${method}]${url}`;
        if(body.loopback==='test'){
-                restApiUtil.sendResponse(response,R.constants.HTTP_OK,'',body,thisService,startTime);
+                restApiUtil.sendResponse(request, response ,R.constants.HTTP_OK,'',body,thisService,startTime);
         }else if(body.loopback==undefined){
-                restApiUtil.sendResponse(response,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS,body,thisService,startTime);
+                restApiUtil.sendResponse(request, response ,R.constants.HTTP_BAD_REQUEST,R.constants.ERROR_REJECT_INVALID_PARAMS,body,thisService,startTime);
        }else{
-                restApiUtil.sendResponse(response,body.loopback.http.code,body.loopback.http.response,body,thisService,startTime);
+                restApiUtil.sendResponse(request, response ,body.loopback.http.code,body.loopback.http.response,body,thisService,startTime);
         }
 });
 

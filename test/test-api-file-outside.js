@@ -81,7 +81,7 @@ describe('*********************************** Unit test api-rest - file manager 
         request.get({url:urlStr,headers: {} } , function(error, response, body) {        
             //console.info("\t\tResponse: ",response.body);
             expect(response.statusCode).to.equal(200);
-            expect(JSON.parse(response.body).files).to.have.lengthOf(1);
+            expect(JSON.parse(response.body).files).to.equal(undefined);
             done();
         });
     });
@@ -405,6 +405,7 @@ describe('*********************************** Unit test api-rest - file manager 
         });
     });
 
+
     step(`search-${testName}`, function(done) {
         sleep(1000);
         let urlStr=`http://localhost:20003/file/${projectId}/${lastIdFile}`;
@@ -453,7 +454,6 @@ describe('*********************************** Unit test api-rest - file manager 
             done();
         });
     });
-
     
     step('search-not-found-outside', function(done) {
         sleep(1000);
@@ -467,7 +467,6 @@ describe('*********************************** Unit test api-rest - file manager 
             done();
         });
     });
-
 
     step('error-schema-outside', function(done) {
         let urlStr=`http://localhost:20003/file`;
@@ -563,5 +562,4 @@ describe('*********************************** Unit test api-rest - file manager 
             done();
         });
     });
-
 });

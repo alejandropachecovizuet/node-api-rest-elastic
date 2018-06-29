@@ -36,7 +36,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
         });    
 
     step('authenticate-ok-inside', async ()=> {
-        sleep(2000);
+        sleep(3000);
         let body={email:"x@x.com", pwd, projectId};
         request={method:'', url:'/test', body, headers: {}};
         response={headers:[]};
@@ -74,7 +74,7 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
 
     step(`search-${testName}`, async ()=> {
         sleep(1000);
-        request={method:'', url:'/test', params:{id:lastIdFile, projectId}, headers: {}};
+        request={method:'', url:`/test-search-${testName}`, params:{id:lastIdFile, projectId}, headers: {}};
         response={headers:[]};
         let code=200;
         try {
@@ -98,8 +98,8 @@ describe('*********************************** Unit test api-rest - INSIDE- file 
             const result = await fileManager.findByIdGlobal(request, response);
             console.info("\t\tResponse: ",result);
             expect(result.httpCode).to.equal(code)
-            expect(result.bodyOut.files).to.have.lengthOf(1);
-            subId=result.bodyOut.files[0].uuid;
+            expect(result.bodyOut.files).to.equal(undefined);
+            subId=result.bodyOut.uuid;
             lastIdFile=undefined;
         } catch (error) {
             console.error(error);

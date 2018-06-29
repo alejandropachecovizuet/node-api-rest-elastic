@@ -24,7 +24,7 @@ exports.findById = (projectId,index, id) => new Promise((resolve, reject)=>{
     if(err===null){
         let records=[];
         if(result!=undefined && result.length){
-            records.push(result[0]);
+            records.push(result[0].record);
         }
         resolve({total:records.length, records});   
     }else{

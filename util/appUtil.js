@@ -12,3 +12,10 @@ exports.getErrorDummy=(testOptions, tag)=>{
 };
 
 exports.sendTestError=(error)=>new Promise((resolve, reject)=>reject(error));
+
+exports.isJsonEmpty=obj=>{
+    if(obj===undefined){
+        return true;
+    }    
+    return Object.keys(obj).length === 0
+};

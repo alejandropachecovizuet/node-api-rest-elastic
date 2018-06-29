@@ -56,7 +56,6 @@ step('init-project', function(done) {
             done();
             });
         });
-        
     step('add-1', function(done) {
         //console.log(`Add registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/1`
@@ -239,6 +238,7 @@ step('init-project', function(done) {
         });
     });
 
+       
     step('update-not-found', function(done) {
         //console.log(`Add registry: ${randomId}`);
         let urlStr=`${protocol}://localhost:20000/test/3333/_update`
@@ -331,7 +331,7 @@ step('init-project', function(done) {
 //        });
 //    });
 
-
+/*
     step('ping-ok', function(done) {
         request({url:`${protocol}://localhost:20000/ping`,headers: {
             'x-access-token': token,
@@ -386,7 +386,7 @@ step('init-project', function(done) {
             done();
         });
     });
-
+*/
     step('general-stats', function(done) {
         request(`${protocol}://localhost:20001/_stats` , function(error, response, body) {
             console.info("\t\tResponse: ",response.body);

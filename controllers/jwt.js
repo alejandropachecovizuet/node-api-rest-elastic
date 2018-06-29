@@ -17,7 +17,7 @@ exports.verify= (token,tokenusername,phrase, projectId) =>{
                     reject(`No corresponde el usuario ${tokenusername} con el Token->`,decodeToken);
                 }
                 if(projectId!=decodeToken.projectId){
-                    reject(`El project ID del usuario ${tokenusername} con corresponde al projectId enviado`);
+                    reject(`El project ID del usuario ${tokenusername} NO corresponde al projectId enviado`);
                 }
                 resolve(decodeToken);
             } catch(err) {

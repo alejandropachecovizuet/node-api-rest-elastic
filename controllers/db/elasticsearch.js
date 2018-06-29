@@ -46,6 +46,9 @@ let add = (projectId,index, uuid,body) => {
     })};
 exports.add = add;
 
+exports.addAll = (body) => getInstance().bulk({body});
+
+
 exports.update = (projectId,index, uuid,body) => add(projectId,index, uuid,body);
     
 let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> getInstance().msearch({
@@ -63,7 +66,7 @@ let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> g
             total=result.responses[0].hits.total
             let array = result.responses[0].hits.hits;
             array.forEach(function (value) {
-                records.push(value._source);
+                records.push({'id':value._id, 'record': value._source})
               });
             }
             //R.logger.info('RESULTTT:',{total, records});
@@ -73,7 +76,21 @@ let find = (projectId,index, queryObj,type) => new Promise((resolve, reject)=> g
 
 exports.find=find;
 
-exports.findById = (projectId,index,id) => find(projectId,index,{"query": {"bool": {"must": [{"match": {"_id": id}}]}}},index,);
+exports.findById = (projectId,index,id) => new Promise((resolve, reject)=>{
+    find(projectId,index,{"query": {"bool": {"must": [{"match": {"_id": id}}]}}},index)
+        .then(result=>{
+            R.logger.info('-->', result);
+            if(result.records.length==1){
+                resolve(result.records[0].record);
+            }else{
+                resolve({});
+            }
+        }
+        ,error=>{
+            R.logger.error('-->', error);            
+            reject(error);
+        })
+    });
 
 exports.deleteById = (projectId,index, type, id) => {
     let promise = new Promise((resolve, reject)=> {
