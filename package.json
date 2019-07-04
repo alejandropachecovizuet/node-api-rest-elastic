@@ -20,7 +20,8 @@
     "method-override": "^2.1.2",
     "mongodb": "^3.0.10",
     "properties-reader": "0.0.16",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "thread-sleep": "^2.1.0",
@@ -31,6 +32,9 @@
     "request": "^2.87.0"
   },
   "scripts": {
-    "test": "nyc mocha --require mocha-steps --timeout 4000"
-  }
+    "test": "nyc mocha --require mocha-steps --timeout 4000",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
